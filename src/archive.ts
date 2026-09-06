@@ -6,6 +6,8 @@ const resultValidator = new Ajv({ strict: false }).compile(resultsSchema);
 import { unzipSync, zipSync, strFromU8, strToU8 } from 'fflate';
 import type { Assets, Episode, Frame, Manifest, RuntimeConfig } from './types.ts';
 import { TOOL_NAMES } from './types.ts';
+// Retired names remain readable in archives, but are never registered or executed.
+const ARCHIVE_TOOL_NAMES: readonly string[] = [...TOOL_NAMES, 'end_episode'];
 export function safePath(path: string) {
   if (
     !path ||
@@ -37,7 +39,7 @@ export function validateRuntime(r: RuntimeConfig) {
     !r ||
     !Array.isArray(r.enabledTools) ||
     new Set(r.enabledTools).size !== r.enabledTools.length ||
-    r.enabledTools.some((t) => !TOOL_NAMES.includes(t))
+    r.enabledTools.some((t) => !ARCHIVE_TOOL_NAMES.includes(t))
   )
     throw new Error('Invalid enabled tools.');
   const p = r.physics;
@@ -130,7 +132,7 @@ export function validateEpisode(ep: Episode) {
     if (
       call.index !== i ||
       call.state_index > ep.states.length ||
-      ![...TOOL_NAMES, 'edit_poses', 'set_camera'].includes(call.name) ||
+      ![...ARCHIVE_TOOL_NAMES, 'edit_poses', 'set_camera'].includes(call.name) ||
       !Number.isFinite(Date.parse(call.timestamp))
     )
       throw new Error('Invalid MCP call reference or timestamp.');

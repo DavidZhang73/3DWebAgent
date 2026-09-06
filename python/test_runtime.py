@@ -7,7 +7,7 @@ import json
 import os
 import unittest
 from pathlib import Path
-from episode_runtime import ROOT, Runtime, as_initial, load, save, verify
+from episode_runtime import ROOT, TOOLS, Runtime, as_initial, load, save, verify
 
 
 class NativeContractTests(unittest.TestCase):
@@ -25,12 +25,16 @@ class NativeContractTests(unittest.TestCase):
             r.execute("capture_scene", {})
         self.assertEqual(r.episode["calls"][-1]["error_code"], "unsupported_capability")
         self.assertEqual(r.episode["observations"], {})
-        r.execute("end_episode", {"reason": "budget"})
-        count = len(r.episode["calls"])
-        r.execute("end_episode", {})
-        self.assertEqual(count, len(r.episode["calls"]))
-        with self.assertRaisesRegex(ValueError, "ended"):
-            r.execute("translate_objects", {"ids": ["a"], "delta": [1, 0, 0]})
+        r.execute("translate_objects", {"ids": ["a"], "delta": [1, 0, 0]})
+        self.assertEqual(r.m["lifecycle"], "active")
+        self.assertEqual(len(r.episode["calls"]), 3)
+
+    def test_end_episode_is_not_supported(self):
+        self.assertNotIn("end_episode", TOOLS)
+        r = self.setup_runtime()
+        with self.assertRaisesRegex(ValueError, "Invalid command"):
+            r.execute("end_episode", {})
+        self.assertEqual(r.m["lifecycle"], "active")
 
     def test_cancel_batch_and_native_exact_verification(self):
         r = self.setup_runtime(True)

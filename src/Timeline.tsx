@@ -141,12 +141,6 @@ export function Timeline({ world }: { world: World }) {
           Start episode
         </button>
         <button
-          disabled={world.busy || lifecycle !== 'active'}
-          onClick={() => void world.execute('end_episode', { reason: 'user_stop' }).catch(fail)}
-        >
-          End episode
-        </button>
-        <button
           disabled={world.busy}
           aria-label="Go to initial state"
           onClick={() => {

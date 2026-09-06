@@ -806,10 +806,9 @@ export class World {
       throw new Error('Return to latest before editing history.');
     const m = this.episode.manifest;
     if (m.lifecycle === 'ended') {
-      if (name === 'end_episode') return { status: 'ended', ...m.end };
       throw new Error('Episode has ended.');
     }
-    if (source === 'webmcp' || name === 'start_episode' || name === 'end_episode') this.start();
+    if (source === 'webmcp' || name === 'start_episode') this.start();
     if (m.lifecycle === 'setup') {
       this.step = 0;
       return operation();
@@ -900,11 +899,7 @@ export class World {
     signal?: AbortSignal,
   ): Promise<unknown> {
     validateInput(name, input);
-    if (
-      source === 'webmcp' &&
-      !LIFECYCLE_TOOLS.includes(name) &&
-      !this.config.enabledTools.includes(name)
-    )
+    if (source === 'webmcp' && !this.config.enabledTools.includes(name))
       throw new Error('Tool is disabled: ' + name);
     if (this.busy) throw new Error('Operation is running.');
     if (signal?.aborted || this.cancelAtStep === 0) throw new Error('Operation cancelled.');
@@ -913,14 +908,6 @@ export class World {
       if (input.task !== undefined && this.episode.calls?.length === 1)
         this.episode.manifest.task = input.task as string;
       return { status: 'active' };
-    }
-    if (name === 'end_episode') {
-      this.episode.manifest.lifecycle = 'ended';
-      this.episode.manifest.end = {
-        reason: (input.reason as string) ?? 'user_stop',
-        ...(input.outcome !== undefined ? { outcome: input.outcome as string } : {}),
-      };
-      return { status: 'ended', ...this.episode.manifest.end };
     }
     if (name === 'advance_simulation') {
       if (!this.config.physics.enabled) throw new Error('Physics is disabled.');

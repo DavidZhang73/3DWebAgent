@@ -24,7 +24,7 @@ const python = (...args: string[]) =>
   );
 const open = async (path: string) =>
   decodeEpisode(new File([new Uint8Array(await readFile(path))], path));
-test('lifecycle starts on observation, freezes setup, ends idempotently, and exports fresh setup', async () => {
+test('lifecycle starts on observation, freezes setup, allows continued operations, and exports fresh setup', async () => {
   const w = await create();
   try {
     await w.execute('get_state', {}, 'webmcp');
@@ -32,17 +32,9 @@ test('lifecycle starts on observation, freezes setup, ends idempotently, and exp
     assert.equal(w.episode.states.length, 0);
     assert.equal(w.canUndo, false);
     assert.throws(() => w.renameObject('a', 'Changed'), /locked/);
-    await w.execute('end_episode', { reason: 'budget' }, 'webmcp');
-    const count = w.episode.calls.length;
-    assert.deepEqual(await w.execute('end_episode', {}, 'webmcp'), {
-      status: 'ended',
-      reason: 'budget',
-    });
-    assert.equal(w.episode.calls.length, count);
-    await assert.rejects(
-      w.execute('translate_objects', { ids: ['a'], delta: [1, 0, 0] }, 'webmcp'),
-      /ended/,
-    );
+    await w.execute('translate_objects', { ids: ['a'], delta: [1, 0, 0] }, 'webmcp');
+    assert.equal(w.episode.manifest.lifecycle, 'active');
+    assert.equal(w.episode.calls.length, 2);
     const initial = asInitial(w.episode, w.snapshot());
     assert.equal(initial.manifest.lifecycle, 'setup');
     assert.equal(initial.calls.length, 0);

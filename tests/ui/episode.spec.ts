@@ -113,8 +113,8 @@ test('physics frames are inspectable and verification reports the original recor
   await expect(page.getByText('Verification: passed', { exact: true })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('episode-physics-replay.png') });
   await page.getByRole('button', { name: 'Return to latest', exact: true }).click();
-  await page.getByRole('button', { name: 'End episode', exact: true }).click();
-  await expect(page.getByText('Episode · ended', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'End episode', exact: true })).toHaveCount(0);
+  await expect(page.getByText('Episode · active', { exact: true })).toBeVisible();
 });
 
 test('a native continuation opens in the browser with human interventions and original physics frames', async ({

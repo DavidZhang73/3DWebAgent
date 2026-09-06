@@ -37,7 +37,6 @@ export const TOOL_NAMES = [
   'move_camera',
   'apply_force',
   'start_episode',
-  'end_episode',
   'advance_simulation',
 ] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
@@ -147,4 +146,4 @@ export const PRODUCER: Producer = {
   engine: '3.12.0',
   implementation: '3dwebagent-runtime-1',
 };
-export const LIFECYCLE_TOOLS: ToolName[] = ['start_episode', 'end_episode'];
+export const LIFECYCLE_TOOLS: ToolName[] = ['start_episode'];

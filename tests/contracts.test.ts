@@ -351,9 +351,13 @@ test('native registration follows enabled tools and stale callbacks fail closed'
     },
   };
   try {
+    // A legacy archive may still list this retired capability.
+    w.config.enabledTools.push('end_episode');
+    await decodeEpisode(file(await encodeEpisode(w.episode)));
     const stop = registerTools(w, () => {});
     await new Promise((r) => setTimeout(r, 20));
-    assert.equal(registered.size, 14);
+    assert.equal(registered.size, 13);
+    assert.equal(registered.has('end_episode'), false);
     const old = registered.get('get_state');
     const result = JSON.parse(await old.execute({}));
     assert.equal(result.objects.length, 2);
@@ -363,9 +367,12 @@ test('native registration follows enabled tools and stale callbacks fail closed'
     fresh.configure({ ...fresh.config, enabledTools: ['list_objects'] });
     const stop2 = registerTools(fresh, () => {});
     await new Promise((r) => setTimeout(r, 20));
-    assert.deepEqual([...registered.keys()], ['list_objects', 'start_episode', 'end_episode']);
+    assert.deepEqual([...registered.keys()], ['list_objects']);
     assert.match(JSON.parse(await old.execute({})).error, /expired/);
-    assert.deepEqual(diagnostics.native, ['list_objects', 'start_episode', 'end_episode']);
+    assert.deepEqual(diagnostics.native, ['list_objects']);
+    await assert.rejects(fresh.execute('start_episode', {}, 'webmcp'), /Tool is disabled/);
+    await assert.rejects(fresh.execute('end_episode', {}, 'webmcp'), /Invalid/);
+    assert.notEqual(fresh.episode.manifest.lifecycle, 'ended');
     stop2();
     fresh.dispose();
   } finally {

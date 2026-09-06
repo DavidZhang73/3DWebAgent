@@ -44,7 +44,7 @@ if _native_libraries:
     PRODUCER["engineBuild"] = hashlib.sha256(
         _native_libraries[0].read_bytes()
     ).hexdigest()
-LIFECYCLE = ("start_episode", "end_episode")
+LIFECYCLE = ("start_episode",)
 
 
 def clone(value):
@@ -711,8 +711,6 @@ class Runtime:
 
     def execute(self, name, args, actor="agent"):
         if self.m["lifecycle"] == "ended":
-            if name == "end_episode":
-                return dict(status="ended", **self.m["end"])
             raise ValueError("Episode has ended.")
         if actor == "agent" or name in LIFECYCLE:
             self.start()
@@ -794,7 +792,6 @@ class Runtime:
         dumps(args)
         if (
             actor == "agent"
-            and name not in LIFECYCLE
             and name in TOOLS
             and name not in self.m["runtime"]["enabledTools"]
         ):
@@ -805,13 +802,6 @@ class Runtime:
             if "task" in args and len(self.episode["calls"]) == 1:
                 self.m["task"] = args["task"]
             return dict(status="active")
-        if name == "end_episode":
-            self.m["lifecycle"] = "ended"
-            self.m["end"] = dict(
-                reason=args.get("reason", "user_stop"),
-                **({"outcome": args["outcome"]} if "outcome" in args else {}),
-            )
-            return dict(status="ended", **self.m["end"])
         if name == "list_objects":
             return dict(objects=clone(self.m["objects"]), groups=clone(self.groups))
         if name == "get_object":

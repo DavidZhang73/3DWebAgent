@@ -278,23 +278,6 @@
     },
     "readOnly": false
   },
-  "end_episode": {
-    "description": "End the current episode without inferring success.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "reason": {
-          "type": "string"
-        },
-        "outcome": {
-          "type": "string"
-        }
-      },
-      "required": [],
-      "additionalProperties": false
-    },
-    "readOnly": false
-  },
   "advance_simulation": {
     "description": "Advance enabled physics for ceil(duration / timestep) steps.",
     "inputSchema": {

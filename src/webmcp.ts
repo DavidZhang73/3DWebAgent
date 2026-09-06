@@ -1,6 +1,5 @@
 import { errorCode } from './runtime.ts';
 import type { World } from './runtime.ts';
-import { LIFECYCLE_TOOLS } from './types.ts';
 import type { Input } from './types.ts';
 import { DEFINITIONS } from './capabilities.ts';
 type Registered = { name: string; description?: string; inputSchema?: unknown };
@@ -57,12 +56,14 @@ export function registerTools(world: World, changed: () => void) {
       diagnostics.status = 'Registering';
       changed();
       try {
-        for (const name of [...new Set([...world.config.enabledTools, ...LIFECYCLE_TOOLS])]) {
+        for (const name of [...new Set(world.config.enabledTools)]) {
           if (cancelled) {
             dispose();
             return;
           }
+          // Older archives may list retired tools; never expose them to agents.
           const d = DEFINITIONS[name];
+          if (!d) continue;
           await context.registerTool(
             {
               name,
