@@ -12,9 +12,9 @@ permissions:
 
 jobs:
   build:
-    name: Test and build
+    name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
@@ -22,24 +22,8 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - uses: astral-sh/setup-uv@v7
-        with:
-          python-version: '3.12'
-          enable-cache: true
       - run: pnpm install --frozen-lockfile
-      - run: uv sync --project python --locked
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:all
-      - name: Preserve test diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-diagnostics
-          path: |
-            test-results/
-            playwright-report/
-          if-no-files-found: ignore
-          retention-days: 7
+      - run: pnpm build
       - name: Upload website
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4

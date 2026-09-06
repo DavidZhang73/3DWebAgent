@@ -134,10 +134,12 @@ ignored. The small OBJ fixture under `tests/fixtures/` is a source test asset.
 
 ## Deployment
 
-GitHub Actions tests and builds every pull request to `main`. Pushes to `main`
-and manual workflow runs on `main` publish `dist/` to GitHub Pages after all tests
-pass. Failed builds leave the deployed website unchanged. To roll back, revert
-the relevant commit on `main`; the same workflow tests and publishes the revert.
+GitHub Actions builds every pull request to `main`. Pushes to `main`
+and manual workflow runs on `main` publish `dist/` to GitHub Pages after the
+TypeScript check and production build pass. Full tests run locally with
+`pnpm test:all` and are not part of deployment. Failed builds leave the deployed
+website unchanged. To roll back, revert
+the relevant commit on `main`; the same workflow builds and publishes the revert.
 
 The repository's Pages publishing source is GitHub Actions, with the custom
 domain `3dwebagent.davidz.cn` and Enforce HTTPS enabled. Cloudflare provides a
