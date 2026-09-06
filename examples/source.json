@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "config_id": "prep-v1-s0-i0-665199a00573",
+  "config_id": "prep-v1-s0-i0-823ea008b2b1",
   "identity": {
     "dataset": "AssemblyWorld/ikea-manual",
     "revision": "d2367e6f86610d38f2d2cc65278f680c9a444d83",
@@ -14,7 +14,7 @@
     },
     "producer": {
       "backend": "native",
-      "build": "869999a71c63625dd7a6c49624f403c5b938fce6f58bd8e34628f143ef7ce57e",
+      "build": "9314f80f55d6feb24ae92ff52348b6c3003f03b9e98a2150e0d2de7457376c29",
       "engine": "3.12.0",
       "implementation": "assembly-world-agent-episode-v1",
       "language": "python"
@@ -25,28 +25,28 @@
   "samples": {
     "Bench/applaro": {
       "episode": "applaro/scene.episode.zip",
-      "episode_id": "awa-c579d3fb18bb1de962eab920828634e03fe9a1883efd2db27306a8acc34f5c94",
-      "sha256": "ba55c55a01ca2578d7a72abff9570a446a1a07aa53d3f9cb0071a95c21baba2d",
+      "episode_id": "awa-a17a0ff53d64fe32fe2e92a5640418323c6c7e85f555ca11a069c1eb2393e936",
+      "sha256": "6b95daf0df2fcafb950ef9a591bee75314057703ad3874dd675312e5234a95e6",
       "parts": 4,
       "source_episode": "Bench--applaro.episode.zip",
       "manual": "applaro/manual/"
     },
     "Chair/reidar": {
       "episode": "reidar/scene.episode.zip",
-      "episode_id": "awa-88d8c49a99ba2d589bedfab46b5ac66e2d482192544c17934a63144127526a51",
-      "sha256": "512d5c620c1f8fddd8ffe1fe321323a8ce169e07d8fa5ad4e7816243e9fb9072",
+      "episode_id": "awa-3837be1dcd4ba75662dc27bacad1478caa743a6d8fc4391180b98103eec2391f",
+      "sha256": "c352fa2cf72b7cd6b7024374c9d79d095627dd5907d1ae70d3ea18823c31aa04",
       "parts": 6,
       "source_episode": "Chair--reidar.episode.zip",
       "manual": "reidar/manual/"
     },
     "Table/vittsjo_2": {
       "episode": "vittsjo/scene.episode.zip",
-      "episode_id": "awa-93a0e5a5d7e895d009f21e436b1a62974a22a96809e825355524b39c2c3340f1",
-      "sha256": "cbbb3d5bdaf1b1759dd3a1863a03968b4e07c6e3691011a587f05b4353c409f7",
+      "episode_id": "awa-1304a7b723af1337abf2561350cd4c9e5775592236cc3aa2feb93441c73c31f9",
+      "sha256": "46fe46ec8ff4f30ba8427404597ca78992077a8b7bd134afb72de94eac918e51",
       "parts": 8,
       "source_episode": "Table--vittsjo_2.episode.zip",
       "manual": "vittsjo/manual/"
     }
   },
-  "source_directory": "ikea-manual/prep-v1-s0-i0-665199a00573"
+  "source_directory": "ikea-manual/prep-v1-s0-i0-823ea008b2b1"
 }
