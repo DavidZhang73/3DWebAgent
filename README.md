@@ -4,6 +4,8 @@ A browser-native 3D editor and agent environment with portable MuJoCo episodes.
 The browser provides editing, WebMCP, image observations and trajectory inspection;
 the headless Python runtime executes and verifies the same state commands.
 
+Open the editor at **[3dwebagent.davidz.cn](https://3dwebagent.davidz.cn/)**.
+
 ## Install and run
 
 Requires Node.js 22.12+, pnpm 11.25.0, Python 3.11+ and uv. Browser and native
@@ -129,6 +131,23 @@ Prettier formats frontend code, configuration and this README; Ruff formats and
 checks Python. Build and format commands regenerate `schema/wasm-build.json` from
 the runtime sources and WASM binary. Generated examples, reports and caches are
 ignored. The small OBJ fixture under `tests/fixtures/` is a source test asset.
+
+## Deployment
+
+GitHub Actions tests and builds every pull request to `main`. Pushes to `main`
+and manual workflow runs on `main` publish `dist/` to GitHub Pages after all tests
+pass. Failed builds leave the deployed website unchanged. To roll back, revert
+the relevant commit on `main`; the same workflow tests and publishes the revert.
+
+The repository's Pages publishing source is GitHub Actions, with the custom
+domain `3dwebagent.davidz.cn` and Enforce HTTPS enabled. Cloudflare provides a
+DNS-only CNAME from `3dwebagent` to `davidzhang73.github.io`. The custom domain
+uses Vite's default root base path (`/`). Domain binding is managed in Pages
+settings, not by a generated `CNAME` file.
+
+Only browser assets are published, including MuJoCo WASM. Python and generated
+test episodes are not deployed. Imported files stay in the browser; deployment
+adds no upload service. WebMCP still requires a compatible browser/client.
 
 ## Limitations
 
