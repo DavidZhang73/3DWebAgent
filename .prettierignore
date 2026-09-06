@@ -1,0 +1,3 @@
+pnpm-lock.yaml
+python/uv.lock
+schema/wasm-build.json

@@ -1,0 +1,143 @@
+{
+  "atol": 1e-9,
+  "rtol": 1e-7,
+  "commands": [
+    {
+      "name": "get_scene",
+      "arguments": {}
+    },
+    {
+      "name": "get_state",
+      "arguments": {}
+    },
+    {
+      "name": "move_camera",
+      "arguments": {
+        "yaw": 15,
+        "pitch": -10,
+        "zoom": 0.9,
+        "right": 0.1
+      }
+    },
+    {
+      "name": "translate_objects",
+      "arguments": {
+        "ids": ["a"],
+        "delta": [0.02, 0, 0.01],
+        "space": "camera"
+      }
+    },
+    {
+      "name": "group_objects",
+      "arguments": {
+        "ids": ["a", "b"],
+        "name": "Pair"
+      }
+    },
+    {
+      "name": "rotate_objects",
+      "arguments": {
+        "ids": ["a", "b"],
+        "angles": [10, -5, 20]
+      }
+    },
+    {
+      "name": "edit_poses",
+      "actor": "human",
+      "arguments": {
+        "poses": [
+          {
+            "id": "a",
+            "position": [0, 0, 0.4],
+            "quaternion": [1, 0, 0, 0]
+          },
+          {
+            "id": "b",
+            "position": [1, 0, 0.4],
+            "quaternion": [1, 0, 0, 0]
+          }
+        ]
+      }
+    },
+    {
+      "name": "apply_force",
+      "arguments": {
+        "id": "a",
+        "force": [1, 0, 0]
+      }
+    },
+    {
+      "name": "advance_simulation",
+      "arguments": {
+        "duration": 0.04
+      },
+      "cancel_at_step": 3
+    },
+    {
+      "name": "advance_simulation",
+      "arguments": {
+        "duration": 0.4
+      }
+    },
+    {
+      "name": "get_state",
+      "arguments": {}
+    },
+    {
+      "name": "set_object_pose",
+      "arguments": {
+        "id": "a",
+        "quaternion": [0, 0, 0, 0]
+      }
+    }
+  ],
+  "physicsCases": [
+    {
+      "name": "settled",
+      "physics": {
+        "strategy": "settle",
+        "gravity": [0, 0, 0],
+        "quietDuration": 0.006,
+        "maxDuration": 0.02
+      },
+      "stop": "settled",
+      "steps": 3
+    },
+    {
+      "name": "timeout",
+      "physics": {
+        "strategy": "settle",
+        "gravity": [0, 0, -9.81],
+        "quietDuration": 0.006,
+        "maxDuration": 0.02
+      },
+      "stop": "timeout",
+      "steps": 10
+    },
+    {
+      "name": "detection-disabled",
+      "physics": {
+        "detection": false,
+        "response": true
+      },
+      "stop": "advanced",
+      "steps": 10
+    },
+    {
+      "name": "response-disabled",
+      "physics": {
+        "detection": true,
+        "response": false
+      },
+      "stop": "advanced",
+      "steps": 10
+    },
+    {
+      "name": "object-collision-disabled",
+      "physics": {},
+      "collisionEnabled": false,
+      "stop": "advanced",
+      "steps": 10
+    }
+  ]
+}

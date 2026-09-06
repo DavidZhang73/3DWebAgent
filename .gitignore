@@ -1,0 +1,26 @@
+# Dependencies and local environments
+node_modules/
+.pnpm-store/
+.venv/
+.env
+.env.*
+!.env.example
+
+# Generated files and local reports
+dist/
+examples/
+test-results/
+playwright-report/
+coverage/
+logs/
+*.log
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+.cache/
+
+# Local workspaces and OS files
+.workspaces/
+.DS_Store

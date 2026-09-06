@@ -1,0 +1,46 @@
+{
+  "name": "3dwebagent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "pnpm contract:build && tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "pnpm contract:build && node --experimental-strip-types --test tests/*.test.ts",
+    "test:ui": "pnpm build && playwright test",
+    "test:python": "python/.venv/bin/python -m unittest discover -s python -p \"test_*.py\"",
+    "examples": "pnpm contract:build && node --experimental-strip-types scripts/generate-examples.ts",
+    "contract:build": "node --experimental-strip-types scripts/runtime-build.ts",
+    "verify:portable": "pnpm contract:build && node --experimental-strip-types scripts/verify-portability.ts",
+    "format": "prettier --write . && uv run --project python ruff format python && pnpm contract:build",
+    "format:check": "prettier --check . && uv run --project python ruff format --check python",
+    "check": "tsc --noEmit --incremental false --noUnusedLocals --noUnusedParameters && uv run --project python ruff check python",
+    "test:prepare": "pnpm examples && pnpm verify:portable",
+    "test:all": "pnpm test:prepare && pnpm test && pnpm test:python && pnpm test:ui",
+    "validate:episodes": "node --experimental-strip-types scripts/validate-episodes.ts examples"
+  },
+  "dependencies": {
+    "@catppuccin/palette": "^1.8.0",
+    "@mujoco/mujoco": "3.12.0",
+    "ajv": "^8.20.0",
+    "dockview-react": "^8.2.0",
+    "fflate": "^0.8.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "^0.183.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.183.0",
+    "prettier": "3.9.6",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.0"
+  }
+}

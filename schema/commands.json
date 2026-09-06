@@ -1,0 +1,75 @@
+{
+  "edit_poses": {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "poses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "position": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "quaternion": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 4,
+                "maxItems": 4
+              }
+            },
+            "required": ["id", "position", "quaternion"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["poses"],
+      "additionalProperties": false
+    },
+    "actor": "human"
+  },
+  "set_camera": {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "camera": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "target": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": ["position", "target"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["camera"],
+      "additionalProperties": false
+    },
+    "actor": "human"
+  }
+}

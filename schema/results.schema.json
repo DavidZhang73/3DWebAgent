@@ -1,0 +1,813 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "3DWebAgent logical command results",
+  "type": "object",
+  "properties": {
+    "name": {
+      "enum": [
+        "translate_objects",
+        "rotate_objects",
+        "set_object_pose",
+        "group_objects",
+        "ungroup_objects",
+        "move_camera",
+        "apply_force",
+        "advance_simulation",
+        "edit_poses",
+        "set_camera",
+        "list_objects",
+        "get_object",
+        "get_scene",
+        "get_state",
+        "start_episode",
+        "end_episode",
+        "capture_scene"
+      ]
+    },
+    "result": {}
+  },
+  "required": ["name", "result"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "translate_objects"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "rotate_objects"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "set_object_pose"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "group_objects"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "ungroup_objects"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "move_camera"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "apply_force"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "advance_simulation"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "edit_poses"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "set_camera"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/mutation"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "list_objects"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "objects": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/objectInfo"
+                }
+              },
+              "groups": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/group"
+                }
+              }
+            },
+            "required": ["objects", "groups"],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "get_object"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/definitions/object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "get_scene"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "units": {
+                "enum": ["SI", "normalized"]
+              },
+              "up": {
+                "const": "Z"
+              },
+              "quaternion": {
+                "const": "wxyz"
+              },
+              "runtime": {
+                "$ref": "#/definitions/runtime"
+              },
+              "objects": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/objectInfo"
+                }
+              }
+            },
+            "required": ["name", "units", "up", "quaternion", "runtime", "objects"],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "get_state"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "units": {
+                "enum": ["SI", "normalized"]
+              },
+              "objects": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/object"
+                }
+              },
+              "groups": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/group"
+                }
+              },
+              "camera": {
+                "$ref": "#/definitions/camera"
+              },
+              "contacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "objects": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "position": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 3,
+                      "maxItems": 3
+                    },
+                    "distance": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["objects", "position", "distance"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["index", "units", "objects", "groups", "camera", "contacts"],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "start_episode"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "active"
+              }
+            },
+            "required": ["status"],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "end_episode"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "ended"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "outcome": {
+                "type": "string"
+              }
+            },
+            "required": ["status", "reason"],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "name": {
+            "const": "capture_scene"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "image"
+                    },
+                    "mimeType": {
+                      "const": "image/png"
+                    },
+                    "observation": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}\\.png$"
+                    }
+                  },
+                  "required": ["type", "mimeType", "observation"],
+                  "additionalProperties": false
+                }
+              },
+              "camera": {
+                "$ref": "#/definitions/camera"
+              },
+              "render": {
+                "type": "object",
+                "properties": {
+                  "width": {
+                    "const": 1024
+                  },
+                  "height": {
+                    "const": 768
+                  },
+                  "pixelRatio": {
+                    "const": 1
+                  },
+                  "fovy": {
+                    "const": 38
+                  },
+                  "near": {
+                    "const": 0.01
+                  },
+                  "far": {
+                    "const": 1000
+                  }
+                },
+                "required": ["width", "height", "pixelRatio", "fovy", "near", "far"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["content", "camera", "render"],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "camera": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "target": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": ["position", "target"],
+      "additionalProperties": false
+    },
+    "group": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        }
+      },
+      "required": ["id", "name", "members"],
+      "additionalProperties": false
+    },
+    "objectInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "const": "rigid"
+        },
+        "collisionEnabled": {
+          "type": "boolean"
+        }
+      },
+      "required": ["id", "name", "type"],
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "physics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "gravity": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "detection": {
+              "type": "boolean"
+            },
+            "response": {
+              "type": "boolean"
+            },
+            "strategy": {
+              "enum": ["fixed", "settle"]
+            },
+            "duration": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 60
+            },
+            "maxDuration": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 60
+            },
+            "quietDuration": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 60
+            },
+            "linearThreshold": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 60
+            },
+            "angularThreshold": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "enabled",
+            "gravity",
+            "detection",
+            "response",
+            "strategy",
+            "duration",
+            "maxDuration",
+            "quietDuration",
+            "linearThreshold",
+            "angularThreshold"
+          ],
+          "additionalProperties": false
+        },
+        "enabledTools": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "list_objects",
+              "get_object",
+              "get_scene",
+              "get_state",
+              "translate_objects",
+              "rotate_objects",
+              "set_object_pose",
+              "group_objects",
+              "ungroup_objects",
+              "capture_scene",
+              "move_camera",
+              "apply_force",
+              "start_episode",
+              "end_episode",
+              "advance_simulation"
+            ]
+          }
+        }
+      },
+      "required": ["physics", "enabledTools"],
+      "additionalProperties": false
+    },
+    "object": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "const": "rigid"
+        },
+        "collisionEnabled": {
+          "type": "boolean"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "quaternion": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "velocity": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "mass": {
+          "type": "number"
+        },
+        "movable": {
+          "type": "boolean"
+        },
+        "inertia": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "centerOfMass": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "inertiaQuaternion": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "geometries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "type": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "size": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "friction": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "condim": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "collidable": {
+                "type": "boolean"
+              }
+            },
+            "required": ["index", "type", "size", "friction", "condim", "collidable"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type",
+        "position",
+        "quaternion",
+        "velocity",
+        "mass",
+        "movable",
+        "inertia",
+        "centerOfMass",
+        "inertiaQuaternion",
+        "geometries"
+      ],
+      "additionalProperties": false
+    },
+    "mutation": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "completed"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physics": {
+          "enum": ["disabled", "advanced", "settled", "timeout"]
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "result": {
+          "$ref": "#/definitions/group"
+        },
+        "duration": {
+          "type": "number"
+        }
+      },
+      "required": ["status", "index"],
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "invalid_argument",
+            "disabled",
+            "busy",
+            "cancelled",
+            "unstable_physics",
+            "historical_edit",
+            "episode_ended",
+            "unsupported_capability"
+          ]
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": ["code", "error"],
+      "additionalProperties": false
+    }
+  }
+}

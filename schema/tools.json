@@ -1,0 +1,314 @@
+{
+  "list_objects": {
+    "description": "List stable object and group IDs and names in this page-local world.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "readOnly": true
+  },
+  "get_object": {
+    "description": "Read one object pose, velocity, mass and geometry in episode units. Quaternion is wxyz.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    },
+    "readOnly": true
+  },
+  "get_scene": {
+    "description": "Read units, runtime settings and scene objects. No external task answers.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "readOnly": true
+  },
+  "get_state": {
+    "description": "Read latest live object states, groups, camera and contacts, independently of history browsing.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "readOnly": true
+  },
+  "translate_objects": {
+    "description": "Translate explicit object or group IDs by delta in world or camera right/up/forward axes. One operation node.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "delta": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "space": {
+          "type": "string",
+          "enum": ["world", "camera"]
+        }
+      },
+      "required": ["ids", "delta"],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "rotate_objects": {
+    "description": "Rotate explicit IDs by X/Y/Z degrees in sequence. Pivot defaults to mean object origin, or provide a world point. Camera axes are right/up/forward.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "angles": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "space": {
+          "type": "string",
+          "enum": ["world", "camera"]
+        },
+        "pivot": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": ["ids", "angles"],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "set_object_pose": {
+    "description": "Set one object absolute world position and/or wxyz quaternion. Direct pose edits clear velocities of edited objects.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "quaternion": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": ["position"]
+        },
+        {
+          "required": ["quaternion"]
+        }
+      ]
+    },
+    "readOnly": false
+  },
+  "group_objects": {
+    "description": "Create a logical transform group from explicit IDs without snapping or physical welding.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "required": ["ids"],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "ungroup_objects": {
+    "description": "Remove specified group IDs without moving objects.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": ["ids"],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "capture_scene": {
+    "description": "Capture the latest world through the agent camera; store the original PNG observation.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "readOnly": true
+  },
+  "move_camera": {
+    "description": "Relative yaw/pitch degrees, distance multiplier zoom, or camera right/up pan. Does not advance physics.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "yaw": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "pitch": {
+          "type": "number",
+          "minimum": -85,
+          "maximum": 85
+        },
+        "zoom": {
+          "type": "number",
+          "minimum": 0.25,
+          "maximum": 4
+        },
+        "right": {
+          "type": "number"
+        },
+        "up": {
+          "type": "number"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "apply_force": {
+    "description": "Apply world force (newtons, magnitude <=20) to an object for configured duration, clear it and run configured settling. Requires physics enabled.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "force": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": ["id", "force"],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "start_episode": {
+    "description": "Start recording; repeated starts are idempotent.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "end_episode": {
+    "description": "End the current episode without inferring success.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  },
+  "advance_simulation": {
+    "description": "Advance enabled physics for ceil(duration / timestep) steps.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 60
+        }
+      },
+      "required": ["duration"],
+      "additionalProperties": false
+    },
+    "readOnly": false
+  }
+}
