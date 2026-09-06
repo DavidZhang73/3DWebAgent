@@ -1,161 +1,148 @@
 # 3DWebAgent
 
-A browser-native 3D editor and agent environment with portable MuJoCo episodes.
-The browser provides editing, WebMCP, image observations and trajectory inspection;
-the headless Python runtime executes and verifies the same state commands.
+**An AI-agent-native 3D physics environment in your browser.**
 
-Open the editor at **[3dwebagent.davidz.cn](https://3dwebagent.davidz.cn/)**.
+Give your agent a URL. It can discover the world's tools, inspect objects,
+perform actions, and observe the results while you watch in the same browser tab.
 
-## Install and run
+- **WebMCP** is the agent interface: structured tools for perception, manipulation,
+  physics, and camera control, exposed directly by the page.
+- **MuJoCo** simulates rigid-body dynamics and contacts through WebAssembly.
+- **Three.js** renders the world and provides an interactive view for humans.
 
-Requires Node.js 22.12+, pnpm 11.25.0, Python 3.11+ and uv. Browser and native
-physics both use MuJoCo 3.12.0.
+## Try it with your agent
+
+Choose an assembly task and give its prompt to your agent. Each link opens an
+initial episode with separate furniture parts; the matching manual is hosted
+alongside it.
+
+| Demo          | Parts | Assembly environment                                                             | Instructions                                                    |
+| ------------- | ----: | -------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| APPLARO bench |     4 | [Open](https://3dwebagent.davidz.cn/?episode=examples/applaro/scene.episode.zip) | [Manual](https://3dwebagent.davidz.cn/examples/applaro/manual/) |
+| REIDAR chair  |     6 | [Open](https://3dwebagent.davidz.cn/?episode=examples/reidar/scene.episode.zip)  | [Manual](https://3dwebagent.davidz.cn/examples/reidar/manual/)  |
+| VITTSJO table |     8 | [Open](https://3dwebagent.davidz.cn/?episode=examples/vittsjo/scene.episode.zip) | [Manual](https://3dwebagent.davidz.cn/examples/vittsjo/manual/) |
+
+**APPLARO bench**
+
+```text
+Assemble the APPLARO bench in this browser environment:
+https://3dwebagent.davidz.cn/?episode=examples/applaro/scene.episode.zip
+
+Follow the assembly manual at:
+https://3dwebagent.davidz.cn/examples/applaro/manual/
+
+Use the environment's WebMCP tools to inspect and position the parts.
+Capture the scene to check your work against the manual.
+```
+
+**REIDAR chair**
+
+```text
+Assemble the REIDAR chair in this browser environment:
+https://3dwebagent.davidz.cn/?episode=examples/reidar/scene.episode.zip
+
+Follow the assembly manual at:
+https://3dwebagent.davidz.cn/examples/reidar/manual/
+
+Use the environment's WebMCP tools to inspect and position the parts.
+Capture the scene to check your work against the manual.
+```
+
+**VITTSJO table**
+
+```text
+Assemble the VITTSJO table in this browser environment:
+https://3dwebagent.davidz.cn/?episode=examples/vittsjo/scene.episode.zip
+
+Follow the assembly manual at:
+https://3dwebagent.davidz.cn/examples/vittsjo/manual/
+
+Use the environment's WebMCP tools to inspect and position the parts.
+Capture the scene to check your work against the manual.
+```
+
+The agent discovers tools such as `list_objects`, `get_object`, `set_object_pose`,
+and `capture_scene`. Watch it work and orbit the scene independently; reload the
+environment URL to start again. These three episodes use pose-based assembly:
+physics stepping and collisions are disabled in their original configuration.
+
+Episodes and original manual pages come from
+[AssemblyWorld/ikea-manual](https://huggingface.co/datasets/AssemblyWorld/ikea-manual).
+See [demo provenance](examples/source.json) for the pinned revision and archive hashes.
+
+Already using an agent with native WebMCP support? Open the link in its connected
+browser and start prompting. Otherwise, follow the one-time setup below.
+No project checkout, Python installation, or API key in the website is required.
+
+## Connect through WebMCP
+
+WebMCP lets a **live browser page** expose tools to an agent. Keep the environment
+open in the browser your agent controls. The demo URL opens a world; it is not
+an HTTP MCP server endpoint.
+
+### Codex with built-in site tools
+
+In a Codex desktop setup that supports site tools, ask Codex to open the demo in
+its **built-in browser** and use the page's WebMCP tools. No separate MCP server
+is needed for this route. Availability depends on the app version, model, and
+workspace; see [OpenAI's site tools guide](https://learn.chatgpt.com/docs/webmcp).
+
+### Codex CLI or Claude Code with Chrome
+
+Use [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+to connect your coding agent to a WebMCP-enabled browser:
+
+1. Install current Chrome (149 or newer) and a current Node.js LTS release.
+2. In Chrome, enable `chrome://flags/#enable-webmcp-testing` and relaunch.
+3. Open `chrome://inspect/#remote-debugging` and enable remote debugging.
+   Use a browser profile dedicated to agent work: the connection can access
+   other tabs and signed-in sessions in that profile.
+4. Run the command for your agent:
+
+**Codex CLI**
 
 ```sh
-pnpm install --frozen-lockfile
-uv sync --project python --locked
-pnpm dev
+codex mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest --autoConnect --categoryExperimentalWebmcp
 ```
 
-Open the local URL printed by Vite. Use `pnpm build` and `pnpm preview` for a
-production build. WebMCP uses the browser's native `modelContext` API; discovery
-requires a compatible browser/client. No substitute bridge is included.
-
-## Edit and record
-
-Import OBJ parts or open an episode. During setup, edit objects, physics, enabled
-tools and the agent camera with Undo/Redo. Groups are logical, not physical welds;
-pose editing supports independent free bodies. Mesh collision uses convex geometry.
-The View menu reopens panels or resets the layout. Select Camera to edit its pose,
-or use Align Camera to View during setup.
-
-Drop a single episode ZIP anywhere in the workspace to open it. Unsaved edits
-require confirmation before replacement; invalid archives leave the current scene
-intact. Panel dragging continues to work normally.
-
-The first agent call, including a query, freezes setup and starts recording.
-Subsequent manual world edits become human intervention events. Start episode and
-End episode provide explicit lifecycle control; saving does not end a run. Active
-archives continue from their latest committed state. Full export retains history;
-current-as-initial export creates a fresh setup from a committed state.
-
-Physics advances only during physical operations or `advance_simulation`. Free
-View, selection, visibility and history browsing do not change the agent camera,
-observations or execution state. The Timeline exposes calls, physics frames,
-original PNGs and failed attempts. Captures use the latest world even with the
-viewport closed. Verify actions runs in an isolated world.
-
-## Python and generated examples
-
-Examples and verification reports are generated locally and are not stored in the
-repository. Create the basic archives before using these commands:
+**Claude Code**
 
 ```sh
-pnpm examples
-uv run --project python python python/replay.py inspect examples/two-objects.episode.zip
-uv run --project python python python/replay.py verify examples/two-objects.episode.zip --atol 1e-9 --rtol 1e-7
+claude mcp add --scope user chrome-devtools -- npx -y chrome-devtools-mcp@latest --autoConnect --categoryExperimentalWebmcp
 ```
 
-Create a local `commands.jsonl` file, with one command per line:
+Restart your agent session, allow Chrome's connection prompt, and give the agent
+the demo URL and task above. Ask it to discover and invoke the page's WebMCP tools.
 
-```jsonl
-{"name":"get_state","arguments":{}}
-{"name":"translate_objects","arguments":{"ids":["a"],"delta":[0,0,0.1]}}
-{"name":"end_episode","arguments":{"reason":"user_stop"}}
-```
+In 3DWebAgent, open **View → WebMCP** to check tool registration. If the browser
+API is unavailable, check the Chrome flag and relaunch. If tools are registered
+but your agent cannot see them, check its browser connection and the
+`--categoryExperimentalWebmcp` option.
 
-```sh
-uv run --project python python python/replay.py run examples/two-objects.initial.episode.zip commands.jsonl -o examples/result.episode.zip
-```
+Setup references: [Chrome WebMCP](https://developer.chrome.com/docs/ai/webmcp),
+[browser connection and flags](https://developer.chrome.com/docs/devtools/agents/get-started/configuration),
+[agent client configurations](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/client-configurations.md).
 
-The CLI emits JSON. Failed commands are retained and subsequent commands are
-attempted. Verification exit codes are 0 passed, 2 diverged, 3 incompatible and
-4 failed. `--mode operation` diagnoses each command independently. Without explicit
-tolerances, verification requires exact numeric equality.
+## What is an episode?
 
-## Public contract
+An **episode** is a portable world and its interaction history, saved as an
+`.episode.zip` file. It contains the model and assets, physics settings, object
+and camera states, agent tool calls with their arguments and results, simulation
+frames, and captured observations. It is the source of truth for a run.
 
-The contract is `3dwebagent-runtime-1`; archives use `3dwebagent-episode`, version 1.
-The authoritative definitions are:
+- **Set up:** open an episode or import OBJ objects; edit the scene, physics,
+  camera, and available tools before the agent starts.
+- **Interact:** the first agent call starts recording, including a query. Later
+  manual world edits are recorded as human interventions. Free observation and
+  view navigation do not change the agent camera or recorded world.
+- **Inspect and share:** use the Timeline to inspect calls and physics frames.
+  Export the full episode to keep the run, or export the current state as an
+  initial episode for a new task. Save before closing the tab.
 
-- [Episode schema](schema/episode.schema.json)
-- [Public tools](schema/tools.json)
-- [Results and error codes](schema/results.schema.json)
-- [Recorded internal commands](schema/commands.json)
-- [Cross-backend conformance fixture](schema/conformance.json)
+Drag an episode ZIP onto the page to reopen it. To share a starting world by URL,
+host the ZIP over HTTPS and pass its URL in the `episode` query parameter
+(URL-encoded; cross-origin hosts must allow CORS). The recipient loads their own
+copy; sharing a URL does not synchronize browser sessions.
 
-Independent producers can create setup archives without importing the editor.
-Python's `Runtime` in [episode_runtime.py](python/episode_runtime.py) supports load,
-restore, execute, save and verify. Coordinates are Z-up, quaternions are wxyz, and
-physical models use SI units. Tool IDs are explicit and independent of selection.
-Direct pose edits clear the edited body's velocities. Calls execute serially;
-failed transactions roll back and overlapping calls are rejected as busy.
-
-Archives contain `manifest.json`, `frames.jsonl`, `frames.bin`, `calls.jsonl`,
-`events.jsonl`, model assets under `world/`, and optional content-addressed PNGs
-under `observations/`. Frame metadata orders initial, committed and trace rows;
-each row maps to `stateSize` little-endian Float64 integration values in
-`frames.bin`. Trace intervals are start-inclusive and end-exclusive. The manifest
-hashes every other member. Readers validate paths, schemas, checksums and frame
-references before replacing a live world.
-
-Restoration requires exact saved-state readback. Cross-backend re-execution uses
-explicit tolerances; the fixture's `atol=1e-9, rtol=1e-7` is not a guarantee for
-arbitrary long trajectories. Build hashes record provenance, not numerical or
-visual equality. Python preserves and verifies stored PNGs but cannot create new
-image observations.
-
-## Development and verification
-
-```sh
-pnpm format
-pnpm format:check
-pnpm check
-pnpm test:all
-pnpm validate:episodes
-```
-
-`test:all` generates basic examples and the WASM/native portability fixture, then
-runs TypeScript, Python and Playwright tests, including a production build.
-Individual commands are `pnpm test`, `pnpm test:python` and `pnpm test:ui`; run
-`pnpm test:prepare` first when generated fixtures are absent or source has changed.
-`pnpm verify:portable` regenerates the mixed-backend episode and verification report.
-Tests include real WASM/native round trips and 30,000 physics steps on each backend.
-
-UI tests use an isolated headless profile. Installed Edge is used when available;
-otherwise install Chromium with `pnpm exec playwright install chromium`.
-`BROWSER_PATH` selects another compatible browser executable. Cross-backend tests
-use `python/.venv/bin/python`; `EPISODE_PYTHON` can override that interpreter.
-
-Prettier formats frontend code, configuration and this README; Ruff formats and
-checks Python. Build and format commands regenerate `schema/wasm-build.json` from
-the runtime sources and WASM binary. Generated examples, reports and caches are
-ignored. The small OBJ fixture under `tests/fixtures/` is a source test asset.
-
-## Deployment
-
-GitHub Actions builds every pull request to `main`. Pushes to `main`
-and manual workflow runs on `main` publish `dist/` to GitHub Pages after the
-TypeScript check and production build pass. Full tests run locally with
-`pnpm test:all` and are not part of deployment. Failed builds leave the deployed
-website unchanged. To roll back, revert
-the relevant commit on `main`; the same workflow builds and publishes the revert.
-
-The repository's Pages publishing source is GitHub Actions, with the custom
-domain `3dwebagent.davidz.cn` and Enforce HTTPS enabled. Cloudflare provides a
-DNS-only CNAME from `3dwebagent` to `davidzhang73.github.io`. The custom domain
-uses Vite's default root base path (`/`). Domain binding is managed in Pages
-settings, not by a generated `CNAME` file.
-
-Only browser assets are published, including MuJoCo WASM. Python and generated
-test episodes are not deployed. Imported files stay in the browser; deployment
-adds no upload service. WebMCP still requires a compatible browser/client.
-
-## Limitations
-
-Episodes stay in memory until exported. Older development archive formats are
-unsupported and are not migrated. Native MCP transport, native image rendering,
-batch scheduling, robot controllers, Gymnasium adapters, continuous simulation and
-history branching are outside this release. No cross-renderer pixel equality is
-claimed. Production builds currently report MuJoCo wrapper externalization and
-large-bundle warnings.
+For programmatic producers and readers, see the [episode schema](schema/episode.schema.json),
+[tool definitions](schema/tools.json), and [Python runtime](python/episode_runtime.py).

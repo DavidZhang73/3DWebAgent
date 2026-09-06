@@ -1,0 +1,43 @@
+{
+  "dataset": "AssemblyWorld/ikea-manual",
+  "revision": "d2367e6f86610d38f2d2cc65278f680c9a444d83",
+  "sample_id": "Chair/reidar",
+  "pages": [
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Chair/reidar/0.pdf",
+      "page_index": 0,
+      "width": 875,
+      "height": 1241,
+      "file": "page-01.png",
+      "sha256": "11d6a4b448f832bc26edb3e7e336ebdaa939c44e50d528ae215c9edd0b8decb8"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Chair/reidar/0.pdf",
+      "page_index": 1,
+      "width": 875,
+      "height": 1241,
+      "file": "page-02.png",
+      "sha256": "bcaf3693b043b80d81dce8239bbf26f740613143cf7eb792abf2a536409db2a1"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Chair/reidar/0.pdf",
+      "page_index": 2,
+      "width": 875,
+      "height": 1241,
+      "file": "page-03.png",
+      "sha256": "a310a8f2cf65fd6168ce04b6de55adbdb3107ccd9a0a171a7bf37ce7759a5779"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Chair/reidar/0.pdf",
+      "page_index": 3,
+      "width": 875,
+      "height": 1241,
+      "file": "page-04.png",
+      "sha256": "437ffda62d7a7970b7d1b801ebfe95e5e036b1e770bd75d73ebcb13ae9f07373"
+    }
+  ]
+}

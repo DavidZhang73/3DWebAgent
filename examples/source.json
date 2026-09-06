@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "config_id": "prep-v1-s0-i0-5b9f2e8a7160",
+  "identity": {
+    "dataset": "AssemblyWorld/ikea-manual",
+    "revision": "d2367e6f86610d38f2d2cc65278f680c9a444d83",
+    "protocol": "assembly-preparation-v1",
+    "preparation": {
+      "surface_points": 4096,
+      "fps_points": 1000,
+      "sampling_seed": 0,
+      "initialization_seed": 0,
+      "min_gap": 0.02
+    },
+    "producer": {
+      "backend": "native",
+      "build": "afd0f3127428668ca0e300abac9afd544bead8cf8a3135b262aa3f6b47c7861f",
+      "engine": "3.12.0",
+      "implementation": "assembly-world-agent-episode-v1",
+      "language": "python"
+    },
+    "contract": "3dwebagent-runtime-1",
+    "engine": "3.12.0"
+  },
+  "samples": {
+    "Bench/applaro": {
+      "episode": "applaro/scene.episode.zip",
+      "episode_id": "awa-a134e59b4544d81aba1acc513eb17e49a85223c5058021d124eff7bac0d0c8e9",
+      "sha256": "a17a628578d5e37bbc3f4f9043fa7492faf5502d4cea3a1b11e5c8eab8f230f4",
+      "parts": 4,
+      "source_episode": "Bench--applaro.episode.zip",
+      "manual": "applaro/manual/"
+    },
+    "Chair/reidar": {
+      "episode": "reidar/scene.episode.zip",
+      "episode_id": "awa-ff58a89857b87621f9c0b5a7c71d0bf20ae8eb3c933a4f7090f49bfcfa2d58d6",
+      "sha256": "2b74d304530071428961c1dacec36fcf69aef6ac6a8b99d8c8f5b1c938773640",
+      "parts": 6,
+      "source_episode": "Chair--reidar.episode.zip",
+      "manual": "reidar/manual/"
+    },
+    "Table/vittsjo_2": {
+      "episode": "vittsjo/scene.episode.zip",
+      "episode_id": "awa-213e02643c33d6ed4ee73a5d2f2ba1b2f8292888b9b370697c6217f3663a1d27",
+      "sha256": "b6950e1f3122324be4dc6c06cef8e5a03270a4b9604194e9741324aac6407cb2",
+      "parts": 8,
+      "source_episode": "Table--vittsjo_2.episode.zip",
+      "manual": "vittsjo/manual/"
+    }
+  },
+  "source_directory": "ikea-manual/prep-v1-s0-i0-5b9f2e8a7160"
+}

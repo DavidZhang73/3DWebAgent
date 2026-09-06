@@ -1,0 +1,115 @@
+{
+  "dataset": "AssemblyWorld/ikea-manual",
+  "revision": "d2367e6f86610d38f2d2cc65278f680c9a444d83",
+  "sample_id": "Table/vittsjo_2",
+  "pages": [
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 0,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-01.png",
+      "sha256": "c32ec02a8fbf0072e0ebcf78a694ff862dd2c52bd2475222cfb6b796b3037b0a"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 1,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-02.png",
+      "sha256": "169ea64ff531a2f3af53254bcd12b80e9658c72864ca027d8f9f1c3731d20198"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 2,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-03.png",
+      "sha256": "8deeaad0f74e007ab7fcdb59c28644b15881b39c26d59f6089b986638cbea79c"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 3,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-04.png",
+      "sha256": "a5b6fc829059bcc5b8d8246fcf333f85aab4be33534f2c436244b8be892a92b9"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 4,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-05.png",
+      "sha256": "f8b3944595bda6f0737e485ef9da386e5775c1b347842648e2f08bb6abb432fc"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 5,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-06.png",
+      "sha256": "8aeea3d337a04367ac628e6766847dcac02ef03d6fcc2eb1d346ff00bc44adb0"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 6,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-07.png",
+      "sha256": "cf23dd4e8c1597d6da0b4891803d659d118d1ced47a497cf7a98801d97168e17"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 7,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-08.png",
+      "sha256": "7c9c9372838f8413b3103bd35d5c7aa40e6b8d12767521dc28f1151920deb9ba"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 8,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-09.png",
+      "sha256": "08472cd7230cbb346cebf4cebc152a52b1c7e85c98499d9b0412220ef2f85f27"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 9,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-10.png",
+      "sha256": "b1347cd2cab9d9e8a7ad618904f1be73b2caad2d8e46bb933a8d0f4f8c2729d5"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 10,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-11.png",
+      "sha256": "bd1d71136f3e3b3797606aaef3b3cf2a9670b820630c32952995097272d16ea6"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Table/vittsjo_2/0.pdf",
+      "page_index": 11,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-12.png",
+      "sha256": "5989f2e266be8d9fde90e479fcb456f5f683b9ce657e3f0404587067f08e7e27"
+    }
+  ]
+}

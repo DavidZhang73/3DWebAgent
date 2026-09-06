@@ -8,7 +8,11 @@ node_modules/
 
 # Generated files and local reports
 dist/
-examples/
+/examples/*
+!/examples/applaro/
+!/examples/reidar/
+!/examples/vittsjo/
+!/examples/source.json
 test-results/
 playwright-report/
 coverage/

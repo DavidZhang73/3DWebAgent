@@ -1,0 +1,79 @@
+{
+  "dataset": "AssemblyWorld/ikea-manual",
+  "revision": "d2367e6f86610d38f2d2cc65278f680c9a444d83",
+  "sample_id": "Bench/applaro",
+  "pages": [
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 0,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-01.png",
+      "sha256": "f2d35f4c6779cae3af37cfaa926978c914498970a4d3808bf4f3904e10b84e1e"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 1,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-02.png",
+      "sha256": "49b31e0015d5e3b50705bfa93addaf6164923b46f4d97b1e6ef7e29755499225"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 2,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-03.png",
+      "sha256": "9bcd0533100a5afd8d9280f288ebfd66007a3fb074d54663e7e164ec5fa7e729"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 3,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-04.png",
+      "sha256": "aa229f9084dff0f0662f4fce6ccfa1bde9541463d173e7e7ceaa19cef6b301b7"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 4,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-05.png",
+      "sha256": "fedd2f5dce504d85a5a736a6f09e493a7ebf45a2b9d0e445c48d439e0a825c26"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 5,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-06.png",
+      "sha256": "d27bc35fb463f7c24cc117b600c7e1e16c41c5b5a1ee6549fe067b123c14e743"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 6,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-07.png",
+      "sha256": "325254799960aceae9b0f916e0d8784f180b5b6d565255e1dfa7e4b211a6878c"
+    },
+    {
+      "manual_id": "0",
+      "source_file": "pdfs/Bench/applaro/0.pdf",
+      "page_index": 7,
+      "width": 1241,
+      "height": 1754,
+      "file": "page-08.png",
+      "sha256": "e125e01a708970879e49bc8fd7a25982d588ca5825f781c3494ef9a9574698cd"
+    }
+  ]
+}
