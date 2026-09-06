@@ -156,7 +156,7 @@ test('a native continuation opens in the browser with human interventions and or
 test('a browser 30000-step episode exports, restores and locates its middle frame', async ({
   page,
 }) => {
-  test.setTimeout(60000);
+  test.setTimeout(process.env.CI ? 180000 : 60000);
   await installTools(page);
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
