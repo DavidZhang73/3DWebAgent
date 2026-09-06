@@ -27,6 +27,10 @@ pose editing supports independent free bodies. Mesh collision uses convex geomet
 The View menu reopens panels or resets the layout. Select Camera to edit its pose,
 or use Align Camera to View during setup.
 
+Drop a single episode ZIP anywhere in the workspace to open it. Unsaved edits
+require confirmation before replacement; invalid archives leave the current scene
+intact. Panel dragging continues to work normally.
+
 The first agent call, including a query, freezes setup and starts recording.
 Subsequent manual world edits become human intervention events. Start episode and
 End episode provide explicit lifecycle control; saving does not end a run. Active

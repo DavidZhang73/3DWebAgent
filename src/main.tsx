@@ -8,6 +8,7 @@ import { World } from './runtime';
 import { Icon } from './Icon';
 import type { IconName } from './Icon';
 import { Menu } from './Menu';
+import { useFileDrop } from './useFileDrop';
 import { THEMES, flavors, savedTheme, applyTheme } from './theme';
 import type { ThemeName } from './theme';
 import { decodeEpisode, encodeEpisode } from './archive';
@@ -112,7 +113,8 @@ function App() {
     [saved, setSaved] = useState<{ url: string; name: string }>();
   const api = useRef<DockviewApi | undefined>(undefined),
     episodeInput = useRef<HTMLInputElement>(null),
-    objInput = useRef<HTMLInputElement>(null);
+    objInput = useRef<HTMLInputElement>(null),
+    opening = useRef(false);
   const redraw = () => setVersion((v) => v + 1);
   useEffect(() => {
     let alive = true;
@@ -184,15 +186,35 @@ function App() {
     setSaved(undefined);
   };
   const load = async (file: File) => {
+    if (opening.current || loading || world?.busy)
+      throw new Error('Wait for the current operation before opening an episode.');
+    if (!file.name.toLowerCase().endsWith('.zip')) throw new Error('Choose an episode ZIP file.');
     if (world?.dirty && !confirm('Replace the unsaved scene? Export it first to keep it.')) return;
+    opening.current = true;
     setLoading(true);
+    if (world) {
+      world.busy = true;
+      world.notify();
+    }
     try {
       const ep = await decodeEpisode(file);
       replace(await World.create(ep.assets, ep));
     } finally {
+      opening.current = false;
       setLoading(false);
+      if (world) {
+        world.busy = false;
+        world.notify();
+      }
     }
   };
+  const dropDisabled = loading || !!world?.busy;
+  const fileDragging = useFileDrop((files) => {
+    void run(() => {
+      if (files.length !== 1) throw new Error('Drop one episode ZIP file at a time.');
+      return load(files[0]);
+    });
+  }, dropDisabled);
   const save = async (initial: boolean) => {
     if (!world || world.busy) return;
     if (initial && world.traceCursor !== null)
@@ -386,6 +408,7 @@ function App() {
       onPointerOver={(e) => showHint(e.target)}
       onFocus={(e) => showHint(e.target)}
     >
+      {fileDragging && <div className="episode-drop-indicator" aria-hidden="true" />}
       <header className="menubar">
         <span className="app-logo" title="3DWebAgent">
           <Icon name="cube" size={20} />
@@ -656,7 +679,12 @@ function App() {
           </>
         ) : (
           <span className="status-hint" role="status">
-            {world?.status ||
+            {(fileDragging
+              ? dropDisabled
+                ? 'Wait for the current operation before opening an episode.'
+                : 'Drop an episode ZIP to open'
+              : '') ||
+              world?.status ||
               hint ||
               (world?.cursor !== null
                 ? 'History is read only · Free View remains available'

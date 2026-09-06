@@ -873,6 +873,14 @@ footer {
   place-items: center;
   color: var(--ctp-subtext0);
 }
+.episode-drop-indicator {
+  position: fixed;
+  inset: 4px;
+  border: 2px dashed var(--ctp-blue);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 5000;
+}
 .dockview-theme-dark {
   --dv-background-color: var(--ctp-crust);
   --dv-activegroup-visiblepanel-tab-background-color: var(--ctp-base);
