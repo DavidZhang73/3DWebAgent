@@ -87,14 +87,16 @@ export function Viewer({ world }: { world: World }) {
         geometry.setAttribute(
           'position',
           new THREE.Float32BufferAttribute(
-            Array.from(m.mesh_vert as ArrayLike<number>).slice(start * 3, (start + count) * 3),
+            (m.mesh_vert as Float32Array).slice(start * 3, (start + count) * 3),
             3,
           ),
         );
         geometry.setIndex(
-          Array.from(m.mesh_face as ArrayLike<number>).slice(
-            faceStart * 3,
-            (faceStart + faceCount) * 3,
+          new THREE.BufferAttribute(
+            new Uint32Array(
+              (m.mesh_face as Int32Array).subarray(faceStart * 3, (faceStart + faceCount) * 3),
+            ),
+            1,
           ),
         );
         geometry.computeVertexNormals();

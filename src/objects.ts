@@ -67,6 +67,8 @@ function documentFor(world: World, path = 'model.xml') {
   return doc;
 }
 async function transaction(world: World, label: string, action: () => Promise<World>) {
+  if (world.episode.manifest.model)
+    throw new Error('MJB models have fixed parts; model editing is unavailable.');
   if (!world.canConfigure)
     throw new Error('Object structure and physics are locked after recording starts.');
   world.busy = true;

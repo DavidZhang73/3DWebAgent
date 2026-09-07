@@ -90,7 +90,10 @@ def validate(ep):
     ):
         raise ValueError("Invalid quiet duration")
     objects = {o["id"] for o in m["objects"]}
-    if len(objects) != len(m["objects"]) or "model.xml" not in ep["assets"]:
+    if (
+        len(objects) != len(m["objects"])
+        or m.get("model", {}).get("path", "model.xml") not in ep["assets"]
+    ):
         raise ValueError("Invalid object catalog or missing model")
     for path in ep["assets"]:
         safe_path(path)
@@ -408,8 +411,13 @@ class Runtime:
                 target = Path(directory) / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
-            self.model = mujoco.MjModel.from_xml_path(
-                str(Path(directory) / "model.xml")
+            descriptor = self.m.get("model")
+            self.model = (
+                mujoco.MjModel.from_binary_path(
+                    str(Path(directory) / descriptor["path"])
+                )
+                if descriptor
+                else mujoco.MjModel.from_xml_path(str(Path(directory) / "model.xml"))
             )
 
         model = self.model

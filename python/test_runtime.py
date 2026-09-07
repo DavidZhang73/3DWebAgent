@@ -17,6 +17,26 @@ class NativeContractTests(unittest.TestCase):
         ep["manifest"]["runtime"]["enabledTools"].append("apply_force")
         return Runtime(ep)
 
+    def test_mjb_native_roundtrip(self):
+        import mujoco
+
+        r = self.setup_runtime()
+        with tempfile.TemporaryDirectory() as directory:
+            binary = Path(directory) / "model.mjb"
+            mujoco.mj_saveModel(r.model, str(binary))
+            ep = r.episode
+            ep["manifest"]["model"] = dict(format="mjb", path="model.mjb")
+            ep["assets"] = {"model.mjb": binary.read_bytes()}
+            model_bytes = ep["assets"]["model.mjb"]
+            native = Runtime(ep)
+            native.execute("translate_objects", {"ids": ["a"], "delta": [1, 0, 0]})
+            path = Path(directory) / "mjb.zip"
+            save(native.episode, path)
+            loaded = Runtime(load(path))
+            self.assertEqual(native.snapshot(), loaded.snapshot())
+            self.assertEqual(loaded.episode["assets"]["model.mjb"], model_bytes)
+            self.assertEqual(verify(loaded.episode)["status"], "passed")
+
     def test_query_lifecycle_and_missing_render_capability(self):
         r = self.setup_runtime()
         r.execute("get_state", {})

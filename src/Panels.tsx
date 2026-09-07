@@ -437,7 +437,7 @@ export function PropertiesPanel() {
     );
   const object = world.object(selected, world.viewedData()),
     locked = world.busy || world.cursor !== null || !object.movable;
-  const configure = !world.canConfigure,
+  const configure = !world.canEditModel,
     collisionReason = world.collisionReason(selected);
   const colliders = object.geometries.filter((g) => g.collidable),
     frictions = colliders.map((g) => g.friction[0]);
@@ -448,6 +448,9 @@ export function PropertiesPanel() {
     run(async () => replace(await editObject(world, selected, change)));
   return (
     <div className="panel" data-hint={configure ? configurationHint : undefined}>
+      {world.episode.manifest.model && (
+        <p>MJB models have fixed parts. Model editing is unavailable; poses remain editable.</p>
+      )}
       <TextField
         label="Object name"
         value={object.name}

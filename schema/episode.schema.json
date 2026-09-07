@@ -156,6 +156,15 @@
           "type": "string",
           "minLength": 1
         },
+        "model": {
+          "type": "object",
+          "properties": {
+            "format": { "const": "mjb" },
+            "path": { "const": "model.mjb" }
+          },
+          "required": ["format", "path"],
+          "additionalProperties": false
+        },
         "contract": {
           "const": "3dwebagent-runtime-1"
         },

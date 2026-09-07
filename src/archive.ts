@@ -121,7 +121,8 @@ export function validateEpisode(ep: Episode) {
     new Set(m.objects.map((o) => o.id)).size !== m.objects.length
   )
     throw new Error('Invalid object catalog.');
-  if (!ep.assets['model.xml']) throw new Error('Missing world/model.xml.');
+  const modelPath = m.model?.path ?? 'model.xml';
+  if (!ep.assets[modelPath]) throw new Error('Missing world/' + modelPath + '.');
   Object.keys(ep.assets).forEach(safePath);
   if (!Array.isArray(ep.states)) throw new Error('Invalid timeline.');
   [ep.initial, ...ep.states].forEach((f, i) => {

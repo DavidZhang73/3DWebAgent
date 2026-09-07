@@ -46,6 +46,7 @@ export type RuntimeConfig = { physics: Physics; enabledTools: ToolName[] };
 export type Manifest = {
   format: '3dwebagent-episode';
   version: 1;
+  model?: { format: 'mjb'; path: 'model.mjb' };
   id: string;
   contract: '3dwebagent-runtime-1';
   lifecycle: 'setup' | 'active' | 'ended';

@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { resolve } from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
-import { decodeEpisode } from '../../src/archive';
+import { decodeEpisode, encodeEpisode } from '../../src/archive';
+import loadMujoco from '@mujoco/mujoco';
+import { World } from '../../src/runtime';
 
 async function installTools(page) {
   await page.addInitScript(() => {
@@ -192,4 +194,53 @@ test('a browser 30000-step episode exports, restores and locates its middle fram
   await page.getByRole('slider', { name: 'Physics frame' }).fill('15000');
   await expect(page.getByText(/physics · step 15000 · 30.000000 s/)).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('30000-steps-middle.png') });
+});
+
+test('MJB keeps v1 fixed-part interaction, rendering, export and replay', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  World.engine = () => loadMujoco();
+  const source = await decodeEpisode(
+    new File([await readFile(resolve('examples/two-objects.initial.episode.zip'))], 'source.zip'),
+  );
+  const w = await World.create(source.assets, source);
+  let bytes;
+  try {
+    w.mj.mj_saveModel(w.model, '/ui.mjb', null);
+    bytes = w.mj.FS.readFile('/ui.mjb');
+    w.mj.FS.unlink('/ui.mjb');
+  } finally {
+    w.dispose();
+  }
+  source.assets = { 'model.mjb': bytes };
+  source.manifest.model = { format: 'mjb', path: 'model.mjb' };
+  const input = test.info().outputPath('mjb-initial.zip');
+  await writeFile(input, await encodeEpisode(source));
+  await installTools(page);
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await page.getByLabel('Episode file', { exact: true }).setInputFiles(input);
+  await expect(page.locator('[data-object-id]')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeDisabled();
+  expect((await invoke(page, 'capture_scene')).content[0].type).toBe('image');
+  await invoke(page, 'translate_objects', { ids: ['a'], delta: [0, 1, 0] });
+  await invoke(page, 'group_objects', { ids: ['a', 'b'] });
+  const expected = await invoke(page, 'get_scene');
+  const pending = page.waitForEvent('download');
+  await page.getByText('File', { exact: true }).click();
+  await page.getByRole('button', { name: 'Export full episode…', exact: true }).click();
+  const output = test.info().outputPath('mjb-run.zip');
+  await (await pending).saveAs(output);
+  const ep = await decodeEpisode(new File([await readFile(output)], 'mjb.zip'));
+  expect(ep.manifest.version).toBe(1);
+  expect(ep.assets['model.mjb']).toEqual(bytes);
+  page.on('dialog', (d) => d.accept());
+  await page.getByLabel('Episode file', { exact: true }).setInputFiles(output);
+  await expect(
+    page.getByRole('list', { name: 'Recorded calls' }).getByRole('listitem'),
+  ).toHaveCount(ep.calls!.length);
+  expect(await invoke(page, 'get_scene')).toEqual(expected);
+  await page.getByRole('button', { name: 'Go to initial state', exact: true }).click();
+  await page.getByRole('button', { name: 'Return to latest', exact: true }).click();
+  expect(errors).toEqual([]);
 });

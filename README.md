@@ -146,3 +146,18 @@ copy; sharing a URL does not synchronize browser sessions.
 
 For programmatic producers and readers, see the [episode schema](schema/episode.schema.json),
 [tool definitions](schema/tools.json), and [Python runtime](python/episode_runtime.py).
+
+### Optional precompiled MJB episodes
+
+Episode format 1 also accepts `manifest.model: {"format":"mjb","path":"model.mjb"}`
+with the compiled model stored at `world/model.mjb`. Without this declaration the
+existing `world/model.xml` behavior is unchanged. MJB archives require a runtime
+with this extension; older XML-only runtimes cannot open them. Both producers and
+runtimes must use MuJoCo 3.12.0. MJB assets participate in the normal archive hashes.
+
+MJB loads the compiled model directly, avoiding browser mesh compilation. It does
+not simplify geometry and can be larger than source meshes. These episodes have
+fixed parts: poses, groups, cameras, queries, captures and replay remain available;
+adding/deleting objects and editing model properties are unavailable. Export keeps
+the original MJB bytes and records state changes separately. XML scenes retain
+their existing editing capabilities and remain the default.

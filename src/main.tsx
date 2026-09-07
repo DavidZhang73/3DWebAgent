@@ -423,7 +423,7 @@ function App() {
               Open episode…
             </button>
             <button
-              disabled={!world?.canConfigure || loading}
+              disabled={!world?.canEditModel || loading}
               onClick={() => objInput.current?.click()}
             >
               Import OBJ…
@@ -479,7 +479,7 @@ function App() {
               Ungroup<kbd>⌥ ⌘ / Ctrl G</kbd>
             </button>
             <button
-              disabled={!world?.canConfigure || !world.selected.length}
+              disabled={!world?.canEditModel || !world.selected.length}
               onClick={() => command('delete')}
             >
               Delete<kbd>Delete</kbd>
@@ -626,7 +626,7 @@ function App() {
                 'plus',
                 () => objInput.current?.click(),
                 false,
-                !world.canConfigure || loading,
+                !world.canEditModel || loading,
               )}
               <span className="toolbar-spacer" />
               {toolButton('WebMCP Diagnostics', 'terminal', () => openPanel('diagnostics'))}

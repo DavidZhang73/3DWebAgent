@@ -118,7 +118,16 @@ export class World {
         mj.FS.mkdirTree(full.slice(0, full.lastIndexOf('/')), 0o777);
         mj.FS.writeFile(full, bytes);
       }
-      model = mj.MjModel.mj_loadXML(directory + '/model.xml');
+      if (episode?.manifest.model) {
+        const vfs = new mj.MjVFS();
+        try {
+          model = mj.MjModel.mj_loadModel(directory + '/' + episode.manifest.model.path, vfs);
+        } finally {
+          vfs.delete();
+        }
+        // MJB is standalone; the model owns its loaded buffers now.
+        mj.FS.unlink(directory + '/' + episode.manifest.model.path);
+      } else model = mj.MjModel.mj_loadXML(directory + '/model.xml');
       if (!model) throw new Error('Model compilation failed.');
       if (model.nplugin || model.nflex || model.nskin || model.ntex)
         throw new Error('Only untextured rigid models are supported in this release.');
@@ -177,7 +186,7 @@ export class World {
       mj.mj_forward(model, world.data);
       if (episode) {
         world.episode = {
-          ...structuredClone(episode),
+          ...structuredClone({ ...episode, assets: {} }),
           assets,
           manifest: structuredClone(manifest),
         };
@@ -230,6 +239,9 @@ export class World {
   }
   get canConfigure() {
     return !this.recording && !this.busy && this.cursor === null;
+  }
+  get canEditModel() {
+    return this.canConfigure && !this.episode.manifest.model;
   }
   get canUndo() {
     return this.canConfigure && this.editHistory.index > 0;
