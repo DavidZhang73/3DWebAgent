@@ -39,7 +39,9 @@ test('agent capture is independent of free view, theme, viewport size and a clos
   page.on('pageerror', (e) => errors.push(e.message));
   await installTools(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await page
     .getByLabel('Episode file', { exact: true })
     .setInputFiles(resolve('examples/two-objects.initial.episode.zip'));
@@ -96,7 +98,9 @@ test('physics frames are inspectable and verification reports the original recor
 }) => {
   await installTools(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await page
     .getByLabel('Episode file', { exact: true })
     .setInputFiles(resolve('examples/two-objects.initial.episode.zip'));
@@ -107,16 +111,17 @@ test('physics frames are inspectable and verification reports the original recor
   const result = await invoke(page, 'advance_simulation', { duration: 0.02 });
   expect(result.steps).toBe(10);
   await page.getByRole('list', { name: 'Recorded calls' }).getByRole('listitem').first().click();
-  await page.getByRole('button', { name: /Inspect physics trajectory/ }).click();
-  const slider = page.getByRole('slider', { name: 'Physics frame' });
+  const slider = page.getByRole('spinbutton', { name: 'Physics frame' });
   await slider.fill('5');
   await expect(page.getByText(/physics · step 5/)).toBeVisible();
+  await page.getByRole('button', { name: 'Timeline settings', exact: true }).click();
   await page.getByRole('button', { name: 'Verify actions', exact: true }).click();
+  await page.keyboard.press('Escape');
   await expect(page.getByText('Verification: passed', { exact: true })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('episode-physics-replay.png') });
   await page.getByRole('button', { name: 'Return to latest', exact: true }).click();
   await expect(page.getByRole('button', { name: 'End episode', exact: true })).toHaveCount(0);
-  await expect(page.getByText('Episode · active', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Episode · active', { exact: true })).toBeVisible();
 });
 
 test('a native continuation opens in the browser with human interventions and original physics frames', async ({
@@ -124,7 +129,9 @@ test('a native continuation opens in the browser with human interventions and or
 }) => {
   await installTools(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   const path = resolve('examples/portable-physics.episode.zip');
   const ep = await decodeEpisode(new File([new Uint8Array(await readFile(path))], 'portable.zip'));
   await page.getByLabel('Episode file', { exact: true }).setInputFiles(path);
@@ -134,9 +141,8 @@ test('a native continuation opens in the browser with human interventions and or
     (c) => c.actor === 'human' && c.producer.backend === 'native',
   )!;
   await calls.nth(intervention.index).click();
-  await page.getByRole('button', { name: /Inspect physics trajectory/ }).click();
   await page
-    .getByRole('slider', { name: 'Physics frame' })
+    .getByRole('spinbutton', { name: 'Physics frame' })
     .fill(String(intervention.trace_start + 5));
   await expect(page.getByText(/physics · step 5/)).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('portable-human-intervention.png') });
@@ -161,7 +167,9 @@ test('a browser 30000-step episode exports, restores and locates its middle fram
   test.setTimeout(60000);
   await installTools(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await page
     .getByLabel('Episode file', { exact: true })
     .setInputFiles(resolve('examples/two-objects.initial.episode.zip'));
@@ -190,8 +198,7 @@ test('a browser 30000-step episode exports, restores and locates its middle fram
   page.on('dialog', (d) => d.accept());
   await page.getByLabel('Episode file', { exact: true }).setInputFiles(path);
   await page.getByRole('list', { name: 'Recorded calls' }).getByRole('listitem').first().click();
-  await page.getByRole('button', { name: /Inspect physics trajectory/ }).click();
-  await page.getByRole('slider', { name: 'Physics frame' }).fill('15000');
+  await page.getByRole('spinbutton', { name: 'Physics frame' }).fill('15000');
   await expect(page.getByText(/physics · step 15000 · 30.000000 s/)).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('30000-steps-middle.png') });
 });
@@ -218,10 +225,14 @@ test('MJB keeps v1 fixed-part interaction, rendering, export and replay', async 
   await writeFile(input, await encodeEpisode(source));
   await installTools(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await page.getByLabel('Episode file', { exact: true }).setInputFiles(input);
   await expect(page.locator('[data-object-id]')).toHaveCount(2);
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeDisabled();
   expect((await invoke(page, 'capture_scene')).content[0].type).toBe('image');
   await invoke(page, 'translate_objects', { ids: ['a'], delta: [0, 1, 0] });
   await invoke(page, 'group_objects', { ids: ['a', 'b'] });

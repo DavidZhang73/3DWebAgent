@@ -3,6 +3,7 @@ import { Euler, MathUtils, Quaternion } from 'three';
 import { Viewer } from './Viewer';
 import { Timeline } from './Timeline';
 import { Icon } from './Icon';
+import { IconButton, IconPopover } from './EditorControls';
 import { NumberField, Section, TextField, VectorFields } from './Fields';
 import { useWorkspace } from './workspace';
 import { editObject } from './objects';
@@ -17,7 +18,7 @@ const configurationHint =
 const poseHint = 'Return to latest and wait for the active operation to edit.';
 
 export function ViewportPanel() {
-  const { world, command } = useWorkspace();
+  const { world } = useWorkspace();
   return (
     <div className="viewport-editor" data-shortcuts="viewport">
       <div className="viewport-toolbar">
@@ -27,59 +28,78 @@ export function ViewportPanel() {
         <span className="toolbar-divider" />
         <span className="subtle">World</span>
         <span className="toolbar-spacer" />
-        <button
-          className={'text-button ' + (world.view.mode === 'camera' ? 'active' : '')}
-          aria-label="Camera View"
-          aria-pressed={world.view.mode === 'camera'}
-          data-hint="Camera View · Numpad 0 / C"
-          disabled={world.busy}
-          onClick={() => {
-            if (world.view.mode !== 'camera') world.toggleCameraView();
-          }}
-        >
-          Camera View
-        </button>
-        <button
-          className={'text-button ' + (world.view.mode === 'free' ? 'active' : '')}
-          aria-label="Free View"
-          aria-pressed={world.view.mode === 'free'}
-          data-hint="Free View · Navigation never changes the scene camera"
-          disabled={world.busy}
-          onClick={() => {
-            if (world.view.mode !== 'free') world.toggleCameraView();
-          }}
-        >
-          Free View
-        </button>
-        <button
-          className="icon-button"
-          title="Frame scene"
-          aria-label="Frame scene"
-          disabled={world.busy}
-          onClick={() => command('frameAll')}
-        >
-          <Icon name="frame" />
-        </button>
-        <button
-          className={'icon-button ' + (world.display.grid ? 'active' : '')}
-          title="Toggle grid"
-          aria-label="Toggle grid"
-          onClick={() => {
-            world.display.grid = !world.display.grid;
-            world.notify();
-          }}
-        >
-          <Icon name="grid" />
-        </button>
-        <button
-          className={'text-button ' + (world.display.wireframe ? 'active' : '')}
-          onClick={() => {
-            world.display.wireframe = !world.display.wireframe;
-            world.notify();
-          }}
-        >
-          {world.display.wireframe ? 'Wireframe' : 'Solid'}
-        </button>
+        <div className="control-group" role="group" aria-label="View camera">
+          <IconButton
+            icon="camera"
+            label="Camera View"
+            description="Follow the recorded scene camera."
+            shortcut="Numpad 0 / C"
+            active={world.view.mode === 'camera'}
+            disabled={world.busy}
+            disabledReason="Wait for the active operation."
+            onClick={() => {
+              if (world.view.mode !== 'camera') world.toggleCameraView();
+            }}
+          />
+          <IconButton
+            icon="orbit"
+            label="Free View"
+            description="Navigate independently of the recorded camera."
+            shortcut="Numpad 0 / C"
+            active={world.view.mode === 'free'}
+            disabled={world.busy}
+            disabledReason="Wait for the active operation."
+            onClick={() => {
+              if (world.view.mode !== 'free') world.toggleCameraView();
+            }}
+          />
+        </div>
+        <div className="control-group" role="group" aria-label="Viewport shading">
+          <IconButton
+            icon="solid"
+            label="Solid"
+            description="Display shaded surfaces."
+            active={!world.display.wireframe}
+            onClick={() => {
+              world.display.wireframe = false;
+              world.notify();
+            }}
+          />
+          <IconButton
+            icon="cube"
+            label="Wireframe"
+            description="Display mesh edges."
+            active={world.display.wireframe}
+            onClick={() => {
+              world.display.wireframe = true;
+              world.notify();
+            }}
+          />
+        </div>
+        <IconPopover icon="layers" label="Overlays">
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={world.display.grid}
+              onChange={(e) => {
+                world.display.grid = e.target.checked;
+                world.notify();
+              }}
+            />
+            Grid
+          </label>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={world.view.cameraVisible}
+              onChange={(e) => {
+                world.view.cameraVisible = e.target.checked;
+                world.notify();
+              }}
+            />
+            Camera helper
+          </label>
+        </IconPopover>
       </div>
       <div className="viewport-stage">
         <Viewer world={world} />
@@ -233,6 +253,7 @@ export function ObjectsPanel() {
         </span>
         <button
           className="row-icon"
+          data-tooltip={'Hide ' + o.name}
           aria-label={'Hide ' + o.name}
           aria-pressed={world.view.hidden.has(id)}
           data-hint="Hide in editor · Does not affect physics or agent capture"
@@ -245,6 +266,7 @@ export function ObjectsPanel() {
         </button>
         <button
           className="row-icon"
+          data-tooltip={'Lock selection ' + o.name}
           aria-label={'Lock selection ' + o.name}
           aria-pressed={world.view.locked.has(id)}
           data-hint="Prevent viewport picking · Manage the object in this tree"
@@ -288,6 +310,7 @@ export function ObjectsPanel() {
             <span className="object-name">Camera</span>
             <button
               className="row-icon"
+              data-tooltip="Show camera helper"
               aria-label="Show camera helper"
               aria-pressed={world.view.cameraVisible}
               data-hint="Show the camera and frustum in Free View"
@@ -325,6 +348,7 @@ export function ObjectsPanel() {
               >
                 <button
                   className="row-icon"
+                  data-tooltip={(expanded ? 'Collapse ' : 'Expand ') + g.name}
                   aria-label={(expanded ? 'Collapse ' : 'Expand ') + g.name}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -352,6 +376,7 @@ export function ObjectsPanel() {
                 <small>{g.members.length}</small>
                 <button
                   className="row-icon"
+                  data-tooltip={'Hide ' + g.name}
                   aria-label={'Hide ' + g.name}
                   aria-pressed={g.members.every((id) => world.view.hidden.has(id))}
                   onClick={(e) => {
@@ -401,8 +426,96 @@ export function ObjectsPanel() {
 }
 
 export function PropertiesPanel() {
+  const { world, propertyCategory, setPropertyCategory } = useWorkspace();
+  const categories = [
+    ['object', 'Object', 'cube', 'Inspect names and transforms for the current selection.'],
+    ['physics', 'Physics', 'physics', 'Inspect object mass, inertia, friction and collision.'],
+    ['world', 'World', 'world', 'Configure scene units, gravity and simulation.'],
+    ['display', 'Display', 'eye', 'Adjust local viewing and display settings.'],
+    ['webmcp', 'WebMCP', 'terminal', 'Configure which tools are available to agents.'],
+  ] as const;
+  const selectedName = world.cameraSelected
+    ? 'Camera'
+    : world.activeGroup
+      ? (world.currentFrame.groups.find((g) => g.id === world.activeGroup)?.name ?? 'No group')
+      : world.selected.length > 1
+        ? `${world.selected.length} objects`
+        : (world.episode.manifest.objects.find((o) => o.id === world.selected[0])?.name ??
+          'No selection');
+  return (
+    <div className="properties-editor">
+      <div
+        className="property-tabs"
+        role="tablist"
+        aria-label="Property categories"
+        aria-orientation="vertical"
+      >
+        {categories.map(([id, label, icon, description], index) => (
+          <IconButton
+            key={id}
+            icon={icon}
+            label={label + ' properties'}
+            description={description}
+            role="tab"
+            aria-selected={propertyCategory === id}
+            aria-controls="property-category-content"
+            id={'property-tab-' + id}
+            tabIndex={propertyCategory === id ? 0 : -1}
+            active={propertyCategory === id}
+            onClick={() => setPropertyCategory(id)}
+            onKeyDown={(e) => {
+              const next =
+                e.key === 'ArrowDown'
+                  ? (index + 1) % categories.length
+                  : e.key === 'ArrowUp'
+                    ? (index + categories.length - 1) % categories.length
+                    : e.key === 'Home'
+                      ? 0
+                      : e.key === 'End'
+                        ? categories.length - 1
+                        : null;
+              if (next !== null) {
+                e.preventDefault();
+                setPropertyCategory(categories[next][0]);
+                document.getElementById('property-tab-' + categories[next][0])?.focus();
+              }
+            }}
+          />
+        ))}
+      </div>
+      <div
+        className="property-content"
+        role="tabpanel"
+        id="property-category-content"
+        aria-labelledby={'property-tab-' + propertyCategory}
+      >
+        <div className="property-heading">
+          <strong>{categories.find(([id]) => id === propertyCategory)![1]}</strong>
+          <span>
+            {['object', 'physics'].includes(propertyCategory)
+              ? selectedName
+              : world.episode.manifest.name}
+          </span>
+        </div>
+        {propertyCategory === 'object' && <ObjectProperties />}
+        {propertyCategory === 'physics' && <ObjectProperties physicsOnly />}
+        {propertyCategory === 'world' && <PhysicsPanel />}
+        {propertyCategory === 'display' && <DisplayPanel />}
+        {propertyCategory === 'webmcp' && <ToolsPanel />}
+      </div>
+    </div>
+  );
+}
+function ObjectProperties({ physicsOnly = false }: { physicsOnly?: boolean }) {
   const { world, run, replace } = useWorkspace();
   const [force, setForce] = useState([4, 0, 0]);
+  if (physicsOnly && (world.cameraSelected || world.activeGroup || world.selected.length !== 1))
+    return (
+      <div className="empty">
+        Select one object to inspect its physics properties. Cameras and groups have no independent
+        physics settings.
+      </div>
+    );
   if (world.cameraSelected) return <CameraProperties />;
   if (world.activeGroup) {
     const group = world.currentFrame.groups.find((g) => g.id === world.activeGroup);
@@ -451,162 +564,185 @@ export function PropertiesPanel() {
       {world.episode.manifest.model && (
         <p>MJB models have fixed parts. Model editing is unavailable; poses remain editable.</p>
       )}
-      <TextField
-        label="Object name"
-        value={object.name}
-        disabled={configure}
-        onChange={(name) => run(() => world.renameObject(selected, name))}
-      />
-      <Section title="Transform" open>
-        <VectorFields
-          label="Position"
-          values={object.position}
-          disabled={locked}
-          hint={locked ? poseHint : ''}
-          onChange={(position) =>
-            run(() => world.execute('set_object_pose', { id: selected, position }))
-          }
-        />
-        <VectorFields
-          label="Rotation"
-          values={[euler.x, euler.y, euler.z].map(MathUtils.radToDeg)}
-          disabled={locked}
-          hint="Euler XYZ · Degrees"
-          onChange={(angles) => {
-            const q = new Quaternion().setFromEuler(
-              new Euler(...(angles.map(MathUtils.degToRad) as [number, number, number]), 'XYZ'),
-            );
-            run(() =>
-              world.execute('set_object_pose', { id: selected, quaternion: [q.w, q.x, q.y, q.z] }),
-            );
-          }}
-        />
-      </Section>
-      <Section title="Physics" open>
-        <NumberField
-          label="Mass"
-          value={object.mass}
-          disabled={configure || !object.movable}
-          hint={world.episode.manifest.units === 'SI' ? 'Mass · kg' : 'Mass · Normalized units'}
-          onChange={(mass) => physics({ mass })}
-        />
-        <label
-          className="check"
-          data-hint={collisionReason || 'Use existing collision geometry and filtering'}
-        >
-          <input
-            aria-label="Object collision"
-            type="checkbox"
-            disabled={configure || !!collisionReason}
-            checked={!collisionReason && object.collisionEnabled !== false}
-            onChange={(e) => run(() => world.setCollisionEnabled(selected, e.target.checked))}
+      {!physicsOnly && (
+        <>
+          <TextField
+            label="Object name"
+            value={object.name}
+            disabled={configure}
+            onChange={(name) => run(() => world.renameObject(selected, name))}
           />
-          Collision
-        </label>
-        <NumberField
-          label="Sliding friction"
-          value={friction}
-          disabled={configure || !!collisionReason}
-          hint={collisionReason || 'Applies to existing collision geometries'}
-          onChange={(slidingFriction) => physics({ slidingFriction })}
-        />
-      </Section>
-      <Section title="Advanced">
-        <CopyID id={object.id} />
-        <VectorFields
-          label="Quaternion"
-          values={q}
-          disabled={locked}
-          onChange={(quaternion) =>
-            run(() => world.execute('set_object_pose', { id: selected, quaternion }))
-          }
-        />
-        <VectorFields
-          label="Center of mass"
-          values={object.centerOfMass}
-          disabled={configure || !object.movable}
-          onChange={(centerOfMass) => physics({ centerOfMass })}
-        />
-        <VectorFields
-          label="Principal inertia"
-          values={object.inertia}
-          disabled={configure || !object.movable}
-          onChange={(inertia) => physics({ inertia })}
-        />
-        <VectorFields
-          label="Inertia quaternion"
-          values={object.inertiaQuaternion}
-          disabled={configure || !object.movable}
-          onChange={(inertiaQuaternion) => physics({ inertiaQuaternion })}
-        />
-        {object.geometries.map((g, i) => (
-          <Section title={'Geometry ' + (i + 1)} key={g.index}>
-            <div className="property-stat">
-              Type{' '}
-              <span>
-                {['Plane', '', 'Sphere', 'Capsule', 'Ellipsoid', 'Cylinder', 'Box', 'Mesh'][g.type]}
-              </span>
-            </div>
-            {g.collidable && (
-              <>
-                <label className="field">
-                  <span>Contact dimension</span>
-                  <select
-                    aria-label={'Geometry ' + (i + 1) + ' contact dimension'}
-                    value={g.condim}
-                    disabled={configure || !!collisionReason}
-                    onChange={(e) =>
-                      physics({ geometry: { index: g.index, condim: Number(e.target.value) } })
-                    }
-                  >
-                    {[1, 3, 4, 6].map((d) => (
-                      <option key={d}>{d}</option>
-                    ))}
-                  </select>
-                </label>
-                {['Sliding', 'Torsional', 'Rolling'].map((label, j) => (
-                  <NumberField
-                    key={j}
-                    label={'Geometry ' + (i + 1) + ' ' + label.toLowerCase() + ' friction'}
-                    value={g.friction[j]}
-                    hint={g.condim < [3, 4, 6][j] ? 'Inactive at this contact dimension' : ''}
-                    disabled={configure || !!collisionReason || g.condim < [3, 4, 6][j]}
-                    onChange={(n) =>
-                      physics({
-                        geometry: {
-                          index: g.index,
-                          friction: g.friction.map((v, k) => (k === j ? n : v)),
-                        },
-                      })
-                    }
-                  />
-                ))}
-              </>
-            )}
+          <Section title="Transform" open>
+            <VectorFields
+              label="Position"
+              values={object.position}
+              disabled={locked}
+              hint={locked ? poseHint : ''}
+              onChange={(position) =>
+                run(() => world.execute('set_object_pose', { id: selected, position }))
+              }
+            />
+            <VectorFields
+              label="Rotation"
+              values={[euler.x, euler.y, euler.z].map(MathUtils.radToDeg)}
+              disabled={locked}
+              hint="Euler XYZ · Degrees"
+              onChange={(angles) => {
+                const q = new Quaternion().setFromEuler(
+                  new Euler(...(angles.map(MathUtils.degToRad) as [number, number, number]), 'XYZ'),
+                );
+                run(() =>
+                  world.execute('set_object_pose', {
+                    id: selected,
+                    quaternion: [q.w, q.x, q.y, q.z],
+                  }),
+                );
+              }}
+            />
           </Section>
-        ))}
-        <VectorFields
-          label="Angular velocity"
-          values={object.velocity.slice(0, 3)}
-          disabled
-          onChange={() => {}}
-        />
-        <VectorFields
-          label="Linear velocity"
-          values={object.velocity.slice(3)}
-          disabled
-          onChange={() => {}}
-        />
+        </>
+      )}
+      {physicsOnly && (
+        <Section title="Physics" open>
+          <NumberField
+            label="Mass"
+            value={object.mass}
+            disabled={configure || !object.movable}
+            hint={world.episode.manifest.units === 'SI' ? 'Mass · kg' : 'Mass · Normalized units'}
+            onChange={(mass) => physics({ mass })}
+          />
+          <label
+            className="check"
+            data-hint={collisionReason || 'Use existing collision geometry and filtering'}
+          >
+            <input
+              aria-label="Object collision"
+              type="checkbox"
+              disabled={configure || !!collisionReason}
+              checked={!collisionReason && object.collisionEnabled !== false}
+              onChange={(e) => run(() => world.setCollisionEnabled(selected, e.target.checked))}
+            />
+            Collision
+          </label>
+          <NumberField
+            label="Sliding friction"
+            value={friction}
+            disabled={configure || !!collisionReason}
+            hint={collisionReason || 'Applies to existing collision geometries'}
+            onChange={(slidingFriction) => physics({ slidingFriction })}
+          />
+        </Section>
+      )}
+      <Section title="Advanced">
+        {!physicsOnly && (
+          <>
+            <CopyID id={object.id} />
+            <VectorFields
+              label="Quaternion"
+              values={q}
+              disabled={locked}
+              onChange={(quaternion) =>
+                run(() => world.execute('set_object_pose', { id: selected, quaternion }))
+              }
+            />
+          </>
+        )}
+        {physicsOnly && (
+          <>
+            <VectorFields
+              label="Center of mass"
+              values={object.centerOfMass}
+              disabled={configure || !object.movable}
+              onChange={(centerOfMass) => physics({ centerOfMass })}
+            />
+            <VectorFields
+              label="Principal inertia"
+              values={object.inertia}
+              disabled={configure || !object.movable}
+              onChange={(inertia) => physics({ inertia })}
+            />
+            <VectorFields
+              label="Inertia quaternion"
+              values={object.inertiaQuaternion}
+              disabled={configure || !object.movable}
+              onChange={(inertiaQuaternion) => physics({ inertiaQuaternion })}
+            />
+            {object.geometries.map((g, i) => (
+              <Section title={'Geometry ' + (i + 1)} key={g.index}>
+                <div className="property-stat">
+                  Type{' '}
+                  <span>
+                    {
+                      ['Plane', '', 'Sphere', 'Capsule', 'Ellipsoid', 'Cylinder', 'Box', 'Mesh'][
+                        g.type
+                      ]
+                    }
+                  </span>
+                </div>
+                {g.collidable && (
+                  <>
+                    <label className="field">
+                      <span>Contact dimension</span>
+                      <select
+                        aria-label={'Geometry ' + (i + 1) + ' contact dimension'}
+                        value={g.condim}
+                        disabled={configure || !!collisionReason}
+                        onChange={(e) =>
+                          physics({ geometry: { index: g.index, condim: Number(e.target.value) } })
+                        }
+                      >
+                        {[1, 3, 4, 6].map((d) => (
+                          <option key={d}>{d}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {['Sliding', 'Torsional', 'Rolling'].map((label, j) => (
+                      <NumberField
+                        key={j}
+                        label={'Geometry ' + (i + 1) + ' ' + label.toLowerCase() + ' friction'}
+                        value={g.friction[j]}
+                        hint={g.condim < [3, 4, 6][j] ? 'Inactive at this contact dimension' : ''}
+                        disabled={configure || !!collisionReason || g.condim < [3, 4, 6][j]}
+                        onChange={(n) =>
+                          physics({
+                            geometry: {
+                              index: g.index,
+                              friction: g.friction.map((v, k) => (k === j ? n : v)),
+                            },
+                          })
+                        }
+                      />
+                    ))}
+                  </>
+                )}
+              </Section>
+            ))}
+            <VectorFields
+              label="Angular velocity"
+              values={object.velocity.slice(0, 3)}
+              disabled
+              onChange={() => {}}
+            />
+            <VectorFields
+              label="Linear velocity"
+              values={object.velocity.slice(3)}
+              disabled
+              onChange={() => {}}
+            />
+          </>
+        )}
       </Section>
-      {world.config.physics.enabled && (
+      {physicsOnly && world.config.physics.enabled && (
         <Section title="Force">
           <VectorFields label="Force" values={force} onChange={setForce} />
-          <button
+          <IconButton
+            icon="physics"
+            label="Apply Force"
+            description="Apply the specified force to the selected object."
             disabled={locked}
+            disabledReason={poseHint}
             onClick={() => run(() => world.execute('apply_force', { id: selected, force }))}
-          >
-            Apply Force
-          </button>
+          />
         </Section>
       )}
     </div>
@@ -617,9 +753,12 @@ function CopyID({ id }: { id: string }) {
   return (
     <div className="copy-id">
       <code className="selectable">{id}</code>
-      <button className="text-button" onClick={() => run(() => navigator.clipboard.writeText(id))}>
-        Copy ID
-      </button>
+      <IconButton
+        icon="copy"
+        label="Copy ID"
+        description="Copy the stable object or group identifier."
+        onClick={() => run(() => navigator.clipboard.writeText(id))}
+      />
     </div>
   );
 }
@@ -649,13 +788,14 @@ function CameraProperties() {
       <div className="property-stat">
         Lens <span>38° · Z Up</span>
       </div>
-      <button
+      <IconButton
+        icon="camera"
+        label="Align Camera to View"
+        description="Set the scene camera to the current free view."
         disabled={locked || world.view.mode !== 'free'}
-        data-hint={locked ? poseHint : 'Set the scene camera to the current free view'}
+        disabledReason={locked ? poseHint : 'Switch to Free View to align the scene camera.'}
         onClick={() => run(() => world.updateCamera(world.view.camera))}
-      >
-        Align Camera to View
-      </button>
+      />
     </div>
   );
 }
@@ -784,12 +924,22 @@ export function DisplayPanel() {
   return (
     <div className="panel">
       <div className="buttons">
-        <button disabled={world.busy} onClick={() => command('camera')}>
-          {world.view.mode === 'camera' ? 'Free View' : 'Camera View'}
-        </button>
-        <button disabled={world.busy} onClick={() => command('frameAll')}>
-          Frame All
-        </button>
+        <IconButton
+          icon={world.view.mode === 'camera' ? 'orbit' : 'camera'}
+          label={world.view.mode === 'camera' ? 'Free View' : 'Camera View'}
+          shortcut="C"
+          disabled={world.busy}
+          disabledReason="Wait for the active operation."
+          onClick={() => command('camera')}
+        />
+        <IconButton
+          icon="frame"
+          label="Frame All"
+          shortcut="Home"
+          disabled={world.busy}
+          disabledReason="Wait for the active operation."
+          onClick={() => command('frameAll')}
+        />
       </div>
       {(['grid', 'wireframe'] as const).map((k) => (
         <label key={k} className="check">
@@ -828,24 +978,30 @@ export function HistoryPanel() {
           <Icon name="history" /> Edit History
         </span>
         <span className="toolbar-spacer" />
-        <button
-          className="icon-button"
-          aria-label="Undo"
-          title="Undo · Cmd/Ctrl Z"
+        <IconButton
+          icon="undo"
+          label="Undo"
+          shortcut="Cmd/Ctrl Z"
           disabled={!world.canUndo}
+          disabledReason={
+            world.recording
+              ? 'Undo is available only while editing the initial scene.'
+              : 'No earlier edit is available.'
+          }
           onClick={() => command('undo')}
-        >
-          <Icon name="undo" />
-        </button>
-        <button
-          className="icon-button"
-          aria-label="Redo"
-          title="Redo · Cmd/Ctrl Shift Z"
+        />
+        <IconButton
+          icon="redo"
+          label="Redo"
+          shortcut="Cmd/Ctrl Shift Z"
           disabled={!world.canRedo}
+          disabledReason={
+            world.recording
+              ? 'Redo is available only while editing the initial scene.'
+              : 'No later edit is available.'
+          }
           onClick={() => command('redo')}
-        >
-          <Icon name="redo" />
-        </button>
+        />
       </div>
       {world.recording ? (
         <div className="empty" data-hint={configurationHint}>

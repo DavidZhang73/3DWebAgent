@@ -29,7 +29,7 @@ export function createOrientationGizmo(host: HTMLElement, onSelect: (direction: 
       button.style.setProperty('--axis-color', `var(--ctp-${color})`);
       button.textContent = sign > 0 ? name : '−';
       button.setAttribute('aria-label', `View from ${sign > 0 ? '+' : '−'}${name}`);
-      button.title = `View from ${sign > 0 ? '+' : '−'}${name}`;
+      button.dataset.tooltip = `View from ${sign > 0 ? '+' : '−'}${name}`;
       button.onclick = () => onSelect(direction.clone());
       root.append(button);
       return { direction, line, button, projected: new Vector3() };

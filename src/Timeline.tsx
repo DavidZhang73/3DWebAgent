@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { IconButton, IconPopover } from './EditorControls';
+import { TimelineTracks } from './TimelineTracks';
 import type { World } from './runtime';
 import { verifyEpisode } from './verify';
 import type { VerificationReport } from './verify';
 
 export function Timeline({ world }: { world: World }) {
   const [selected, setSelected] = useState(-1),
-    [expanded, setExpanded] = useState(false),
+    [detailOpen, setDetailOpen] = useState(false),
+    [includeFailed, setIncludeFailed] = useState(false),
     [playing, setPlaying] = useState(false),
     [rate, setRate] = useState(1),
     [mode, setMode] = useState<'calls' | 'simulation'>('calls');
@@ -15,14 +18,19 @@ export function Timeline({ world }: { world: World }) {
   const calls = world.episode.calls ?? [],
     call = calls[selected],
     trace = world.episode.trajectory;
-  const playRef = useRef({ start: 0, index: 0 });
+  const elapsed = useRef(0);
+  const finished = useRef(false);
+  const navigation = useRef(0);
   const fail = (e: unknown) => {
     world.error = String(e);
     world.notify();
   };
   const select = (i: number) => {
+    if (world.busy) return;
+    navigation.current++;
     setSelected(i);
-    setExpanded(false);
+    elapsed.current = 0;
+    finished.current = false;
     world.setCursor(i < 0 ? (world.recording ? 0 : null) : calls[i].state_index);
   };
   useEffect(() => {
@@ -30,7 +38,9 @@ export function Timeline({ world }: { world: World }) {
   }, [calls.length, world.cursor]);
   useEffect(() => {
     setSelected((world.episode.calls?.length ?? 0) - 1);
-    setExpanded(false);
+    setDetailOpen(false);
+    elapsed.current = 0;
+    finished.current = false;
     setPlaying(false);
     setReport(undefined);
   }, [world]);
@@ -47,62 +57,100 @@ export function Timeline({ world }: { world: World }) {
     };
   }, [world, call]);
   useEffect(() => {
-    if (!playing || world.busy) return;
-    if (mode === 'calls') {
-      const timer = setTimeout(() => {
-        if (selected + 1 >= calls.length) setPlaying(false);
-        else select(selected + 1);
-      }, 1000 / rate);
-      return () => clearTimeout(timer);
-    }
-    if (selected < 0) {
-      select(0);
-      return;
-    }
-    const next = () => {
-      if (selected + 1 >= calls.length) setPlaying(false);
-      else select(selected + 1);
-    };
-    const start = call?.trace_start ?? 0,
-      end = call?.trace_end ?? 0;
-    // Give zero-duration calls an ordered display interval. Failed attempts are opt-in.
-    if (start === end || (call?.status === 'error' && !expanded)) {
-      const timer = setTimeout(next, 150 / rate);
-      return () => clearTimeout(timer);
-    }
-    world.setTraceCursor(start);
-    playRef.current = { start: performance.now(), index: start };
+    setPlaying(false);
+  }, [world.busy, calls.length]);
+  useEffect(() => {
+    if (!playing || world.busy || !calls.length) return;
     let token = 0;
+    const next = () => {
+      if (world.busy) {
+        setPlaying(false);
+        return;
+      }
+      elapsed.current = 0;
+      if (selected + 1 >= calls.length) {
+        finished.current = true;
+        setPlaying(false);
+      } else select(selected + 1);
+    };
+    if (
+      mode === 'calls' ||
+      selected < 0 ||
+      !call ||
+      call.trace_start === call.trace_end ||
+      (call.status === 'error' && !includeFailed)
+    ) {
+      if (
+        world.traceCursor !== null &&
+        (mode === 'calls' || (call?.status === 'error' && !includeFailed))
+      )
+        world.setCursor(call.state_index);
+      const duration = mode === 'calls' ? 1000 : 150;
+      const start = performance.now(),
+        generation = navigation.current;
+      const timer = setTimeout(next, Math.max(0, duration - elapsed.current) / rate);
+      return () => {
+        clearTimeout(timer);
+        if (navigation.current === generation)
+          elapsed.current += (performance.now() - start) * rate;
+      };
+    }
+    const end = call.trace_end;
+    let index =
+      world.traceCursor !== null && world.traceCursor >= call.trace_start && world.traceCursor < end
+        ? world.traceCursor
+        : call.trace_start;
+    world.setTraceCursor(index);
+    const startTime = trace[index].sim_time,
+      start = performance.now();
+    let completeAt: number | null = null;
     const tick = () => {
       if (world.busy) {
         setPlaying(false);
         return;
       }
-      const p = playRef.current,
-        target = trace[start].sim_time + ((performance.now() - p.start) * rate) / 1000;
+      const target = startTime + ((performance.now() - start) * rate) / 1000;
       while (
-        p.index + 1 < end &&
-        trace[p.index + 1].sim_time >= trace[p.index].sim_time &&
-        trace[p.index + 1].sim_time <= target
+        index + 1 < end &&
+        trace[index + 1].sim_time >= trace[index].sim_time &&
+        trace[index + 1].sim_time <= target
       )
-        p.index++;
-      world.setTraceCursor(p.index);
-      if (p.index + 1 >= end) next();
-      else if (trace[p.index + 1].sim_time < trace[p.index].sim_time) {
-        world.setTraceCursor(p.index + 1);
-        next();
-      } else token = requestAnimationFrame(tick);
+        index++;
+      if (index + 1 < end && trace[index + 1].sim_time < trace[index].sim_time) index++;
+      if (world.traceCursor !== index) world.setTraceCursor(index);
+      if (index + 1 >= end) {
+        // Keep the final / rollback endpoint visible before advancing to the next call.
+        completeAt ??= performance.now();
+        if ((performance.now() - completeAt) * rate >= 150) {
+          next();
+          return;
+        }
+      }
+      token = requestAnimationFrame(tick);
     };
     token = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(token);
-  }, [playing, mode, selected, rate, world, world.busy, expanded]);
+  }, [playing, mode, selected, rate, world, world.busy, includeFailed, calls.length]);
 
+  const togglePlayback = () => {
+    if (world.busy || !calls.length) return;
+    if (
+      !playing &&
+      (finished.current ||
+        (selected === calls.length - 1 &&
+          ((mode === 'calls' && elapsed.current === 0) ||
+            (mode === 'simulation' && world.traceCursor === null) ||
+            world.traceCursor === call?.trace_end - 1)))
+    )
+      select(-1);
+    setPlaying((p) => !p);
+  };
   useEffect(() => {
-    world.playback = () => setPlaying((p) => !p);
+    world.playback = togglePlayback;
     return () => {
       world.playback = undefined;
     };
-  }, [world]);
+  });
   const verify = async () => {
     setVerifying(true);
     try {
@@ -133,30 +181,94 @@ export function Timeline({ world }: { world: World }) {
       tabIndex={0}
     >
       <div className="timeline-toolbar">
-        <strong>Episode · {lifecycle}</strong>
-        <button
+        <span
+          className={'episode-status ' + lifecycle}
+          data-tooltip="Episode status"
+          data-description={
+            lifecycle === 'setup'
+              ? 'Initial scene editing is available.'
+              : 'Calls are recorded in this episode.'
+          }
+          aria-label={'Episode · ' + lifecycle}
+        >
+          {lifecycle}
+        </span>
+        <IconButton
+          icon="record"
+          label="Start episode"
+          description="Freeze the initial scene and begin recording calls. This does not start playback."
           disabled={world.busy || lifecycle !== 'setup'}
+          disabledReason={
+            world.busy ? 'Wait for the active operation.' : 'This episode has already started.'
+          }
           onClick={() => void world.execute('start_episode', {}).catch(fail)}
-        >
-          Start episode
-        </button>
-        <button
-          disabled={world.busy}
-          aria-label="Go to initial state"
-          onClick={() => {
-            setPlaying(false);
-            select(-1);
-          }}
-        >
-          Initial
-        </button>
-        <button
-          disabled={world.busy || !calls.length}
-          aria-label={playing ? 'Pause playback' : 'Play history'}
-          onClick={() => setPlaying((p) => !p)}
-        >
-          {playing ? 'Pause' : 'Play'}
-        </button>
+        />
+        <span className="toolbar-divider" />
+        <div className="control-group" role="group" aria-label="Playback navigation">
+          <IconButton
+            icon="first"
+            label="Go to initial state"
+            description="Show the initial state, before all calls."
+            disabled={world.busy}
+            disabledReason="Wait for the active operation."
+            onClick={() => {
+              setPlaying(false);
+              select(-1);
+            }}
+          />
+          <IconButton
+            icon="previous"
+            label="Previous step"
+            description="Pause and inspect the previous call."
+            disabled={world.busy || selected < 0}
+            disabledReason={
+              world.busy ? 'Wait for the active operation.' : 'Already at the initial state.'
+            }
+            onClick={() => {
+              setPlaying(false);
+              select(selected - 1);
+            }}
+          />
+          <IconButton
+            icon={playing ? 'pause' : 'play'}
+            label={playing ? 'Pause playback' : 'Play history'}
+            description="Replay recorded calls and physics without changing the episode."
+            shortcut="Space"
+            active={playing}
+            disabled={world.busy || !calls.length}
+            disabledReason={
+              world.busy ? 'Wait for the active operation.' : 'No recorded calls to play.'
+            }
+            onClick={togglePlayback}
+          />
+          <IconButton
+            icon="next"
+            label="Next step"
+            description="Pause and inspect the next call."
+            disabled={world.busy || selected + 1 >= calls.length}
+            disabledReason={
+              world.busy ? 'Wait for the active operation.' : 'Already at the last call.'
+            }
+            onClick={() => {
+              setPlaying(false);
+              select(selected + 1);
+            }}
+          />
+          <IconButton
+            icon="last"
+            label="Return to latest"
+            description="Leave history and return to the live scene."
+            disabled={world.busy}
+            disabledReason="Wait for the active operation."
+            onClick={() => {
+              setPlaying(false);
+              navigation.current++;
+              elapsed.current = 0;
+              finished.current = false;
+              world.setCursor(null);
+            }}
+          />
+        </div>
         <label>
           Call{' '}
           <input
@@ -175,26 +287,17 @@ export function Timeline({ world }: { world: World }) {
             }}
           />
         </label>
-        <button
-          disabled={world.busy}
-          aria-label="Return to latest"
-          onClick={() => {
-            setPlaying(false);
-            world.setCursor(null);
-          }}
-        >
-          Latest
-        </button>
         <select
           aria-label="Playback mode"
           value={mode}
           onChange={(e) => {
             setPlaying(false);
+            elapsed.current = 0;
             setMode(e.target.value as typeof mode);
           }}
         >
-          <option value="calls">By call</option>
-          <option value="simulation">Simulation time</option>
+          <option value="calls">Calls</option>
+          <option value="simulation">Physics</option>
         </select>
         <select
           aria-label="Playback rate"
@@ -207,114 +310,94 @@ export function Timeline({ world }: { world: World }) {
             </option>
           ))}
         </select>
-        <button disabled={verifying || world.busy || !calls.length} onClick={() => void verify()}>
-          {verifying ? 'Verifying…' : 'Verify actions'}
-        </button>
-      </div>
-      <div className="episode-columns">
-        <div className="episode-calls" role="list" aria-label="Recorded calls">
-          {calls.map((c, i) => (
-            <button
-              key={c.id}
-              role="listitem"
-              aria-current={i === selected ? 'step' : undefined}
-              disabled={world.busy}
-              onClick={() => {
+        <IconPopover icon="settings" label="Timeline settings">
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={includeFailed}
+              onChange={(e) => {
                 setPlaying(false);
-                select(i);
+                setIncludeFailed(e.target.checked);
               }}
-            >
-              <span>
-                {i + 1} · {c.actor} · {c.name}
-              </span>
-              <small>
-                {c.status === 'error'
-                  ? c.error_code
-                  : `${c.steps} physics steps · ${(c.sim_end - c.sim_start).toFixed(3)} s`}
-              </small>
-            </button>
-          ))}
-          {!calls.length && <p>Setup editor · the first agent call starts recording.</p>}
-        </div>
-        <div className="episode-detail">
-          {call ? (
-            <>
-              <strong>
-                {call.name} · {call.status}
-              </strong>
-              {call.trace_end > call.trace_start && (
-                <>
-                  <button
-                    aria-expanded={expanded}
-                    onClick={() => {
-                      setPlaying(false);
-                      setExpanded((v) => !v);
-                    }}
-                  >
-                    {expanded ? 'Hide' : 'Inspect'}{' '}
-                    {call.status === 'error' ? 'attempt and rollback' : 'physics trajectory'} (
-                    {call.trace_end - call.trace_start} frames)
-                  </button>
-                  {expanded && (
-                    <>
-                      <p>
-                        {world.traceCursor !== null
-                          ? `${trace[world.traceCursor].phase} · step ${trace[world.traceCursor].step} · ${trace[world.traceCursor].sim_time.toFixed(6)} s`
-                          : 'Select a recorded frame'}
-                      </p>
-                      <input
-                        aria-label="Physics frame"
-                        type="range"
-                        min={call.trace_start}
-                        max={call.trace_end - 1}
-                        value={world.traceCursor ?? call.trace_start}
-                        onChange={(e) => {
-                          setPlaying(false);
-                          world.setTraceCursor(Number(e.target.value));
-                        }}
-                      />
-                    </>
-                  )}
-                </>
-              )}
-              <pre>
-                {JSON.stringify(
-                  {
-                    arguments: call.arguments,
-                    ...(call.status === 'error'
-                      ? {
-                          error: call.error,
-                          code: call.error_code,
-                          cancellation: call.cancellation,
-                        }
-                      : { result: call.result }),
-                  },
-                  null,
-                  2,
-                )}
-              </pre>
-              {url && (
-                <figure>
-                  <figcaption>Original agent observation</figcaption>
-                  <img src={url} alt="Original agent observation" />
-                </figure>
-              )}
-            </>
-          ) : (
-            <p>
-              {trace.length} recorded trajectory frames · {world.episode.states.length} committed
-              states. Free View never changes agent observations.
-            </p>
-          )}
-          {report && (
-            <div role="status">
-              <strong>Verification: {report.status}</strong>
-              <pre>{JSON.stringify(report, null, 2)}</pre>
-              <button onClick={exportReport}>Export verification report</button>
-            </div>
-          )}
-        </div>
+            />
+            Include failed attempts
+          </label>
+          <button disabled={verifying || world.busy || !calls.length} onClick={() => void verify()}>
+            Verify actions
+          </button>
+        </IconPopover>
+        {verifying && (
+          <span role="status" className="verification-state">
+            Verifying…
+          </span>
+        )}
       </div>
+      <div className={`episode-columns ${detailOpen ? 'with-detail' : ''}`}>
+        <TimelineTracks
+          world={world}
+          selected={selected}
+          playing={playing}
+          select={select}
+          pause={() => {
+            navigation.current++;
+            elapsed.current = 0;
+            finished.current = false;
+            setPlaying(false);
+          }}
+          inspect={() => setDetailOpen(true)}
+        />
+        {detailOpen && (
+          <aside className="episode-detail" aria-label="Call details">
+            <IconButton
+              icon="close"
+              label="Hide call details"
+              className="close-call-detail"
+              onClick={() => setDetailOpen(false)}
+            />
+            {call ? (
+              <>
+                <strong>
+                  {call.name} · {call.status}
+                </strong>
+                <pre>
+                  {JSON.stringify(
+                    {
+                      arguments: call.arguments,
+                      ...(call.status === 'error'
+                        ? {
+                            error: call.error,
+                            code: call.error_code,
+                            cancellation: call.cancellation,
+                          }
+                        : { result: call.result }),
+                    },
+                    null,
+                    2,
+                  )}
+                </pre>
+                {url && (
+                  <figure>
+                    <figcaption>Original agent observation</figcaption>
+                    <img src={url} alt="Original agent observation" />
+                  </figure>
+                )}
+              </>
+            ) : (
+              <p>
+                {trace.length} recorded trajectory frames · {world.episode.states.length} committed
+                states. Free View never changes agent observations.
+              </p>
+            )}
+          </aside>
+        )}
+      </div>
+      {report && (
+        <details className="timeline-verification" open>
+          <summary>Verification: {report.status}</summary>
+          <pre>{JSON.stringify(report, null, 2)}</pre>
+          <button onClick={exportReport}>Export verification report</button>
+        </details>
+      )}
     </section>
   );
 }

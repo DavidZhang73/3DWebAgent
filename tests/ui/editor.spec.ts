@@ -22,7 +22,9 @@ async function start(page: Page) {
     });
   });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
 }
 async function call(page: Page, name: string, args: Record<string, unknown> = {}) {
   await expect
@@ -75,6 +77,7 @@ test('object editing, structural undo and savepoints preserve IDs and call logs'
   await page.getByLabel('Rename', { exact: true }).fill('Named Part');
   await page.getByLabel('Rename', { exact: true }).press('Enter');
   await expect(page.getByLabel('Object name', { exact: true })).toHaveValue('Named Part');
+  await page.getByRole('tab', { name: 'Physics properties', exact: true }).click();
   await change(page, 'Mass', '2');
   await expect(page.getByLabel('Mass', { exact: true })).toHaveValue('2');
   await expect(page.getByLabel('Mass', { exact: true })).toHaveValue('2');
@@ -85,6 +88,7 @@ test('object editing, structural undo and savepoints preserve IDs and call logs'
   await expect(page.getByLabel('Mass', { exact: true })).toHaveValue('2');
   await exported(page);
   await expect(page.locator('.window-title')).not.toContainText('•');
+  await page.getByRole('tab', { name: 'Object properties', exact: true }).click();
   await change(page, 'Position X', '1.5');
   await rows.first().focus();
   await page.keyboard.press('Control+z');
@@ -128,6 +132,7 @@ test('inferred inertia, friction and collision edits survive export and invalid 
   await expect(rows).toHaveCount(2);
   await rows.first().click();
   const id = await rows.first().getAttribute('data-object-id');
+  await page.getByRole('tab', { name: 'Physics properties', exact: true }).click();
   await change(page, 'Mass', '3');
   await expect(page.getByLabel('Mass', { exact: true })).toHaveValue('3');
   await change(page, 'Sliding friction', '0.4');
@@ -210,10 +215,12 @@ test('modal multi-object transforms commit once, cancel exactly and ignore text 
   await page.keyboard.press('Escape');
   expect((await call(page, 'get_state')).objects[0].position).toEqual(moved.objects[0].position);
   await call(page, 'translate_objects', { ids: [before.objects[0].id], delta: [0, 0, 0.1] });
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeDisabled();
   await expect(
     page.getByRole('list', { name: 'Recorded calls' }).getByRole('listitem').last(),
-  ).toContainText('translate_objects');
+  ).toHaveAttribute('aria-label', /translate_objects/);
 });
 
 test('free playback and local visibility never change agent captures or saved cameras', async ({

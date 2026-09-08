@@ -1,6 +1,16 @@
 import type { CSSProperties } from 'react';
 
 const paths = {
+  close: 'M6 6l12 12M18 6 6 18',
+  orbit: 'M21 12a9 4 0 1 1-18 0 9 4 0 0 1 18 0M12 3a4 9 0 1 1 0 18 4 9 0 0 1 0-18',
+  solid: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 3v18M4 8h16M4 16h16',
+  layers: 'm12 3 10 5-10 5L2 8zM2 12l10 5 10-5M2 16l10 5 10-5',
+  physics: 'M7 3h10v5H7zM12 8v6M8 11l4 4 4-4M3 20h18',
+  world: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0M3 12h18M12 3c-5 4-5 14 0 18 5-4 5-14 0-18',
+  record: 'M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0M9 9h6v6H9z',
+  check: 'm4 12 5 5L20 6',
+  copy: 'M8 8h13v13H8zM16 8V3H3v13h5',
+
   cursor: 'm5 3 14 9-7 1-3 7z',
   move: 'M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3',
   rotate: 'M20 10a8 8 0 1 0-2 8M20 4v6h-6',

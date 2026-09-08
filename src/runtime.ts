@@ -578,9 +578,14 @@ export class World {
     this.groups = structuredClone(f.groups);
     this.groupCounter = f.groupCounter;
   }
+  private viewedFrame?: Frame;
   viewedData() {
     if (this.cursor === null) return this.data;
-    this.restore(this.history, this.currentFrame);
+    const frame = this.currentFrame;
+    if (this.viewedFrame !== frame) {
+      this.restore(this.history, frame);
+      this.viewedFrame = frame;
+    }
     return this.history;
   }
   setCursor(index: number | null) {

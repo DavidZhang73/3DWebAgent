@@ -17,7 +17,9 @@ async function episode(page: Page, name = 'scene.episode.zip', initial = false) 
 }
 async function start(page: Page) {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
 }
 
 test('episode ZIP drops open from the viewport and inspectors without taking over panel drags', async ({
@@ -52,7 +54,9 @@ test('episode ZIP drops open from the viewport and inspectors without taking ove
   await expect(page.locator('.episode-drop-indicator')).toHaveCount(0);
   const initial = await episode(page, 'initial.zip', true);
   await outliner.dispatchEvent('drop', { dataTransfer: initial });
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   expect(page.url()).toMatch(/\/$/);
   const internal = await page.evaluate(() => {
     const dataTransfer = new DataTransfer();
@@ -105,7 +109,9 @@ test('cancelled, invalid and multiple file drops preserve the unsaved scene', as
     expect(
       await rows.evaluateAll((rows) => rows.map((row) => row.getAttribute('data-object-id'))),
     ).toEqual(ids);
-    await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+    ).toBeEnabled();
     await page.getByRole('button', { name: 'Dismiss', exact: true }).click();
     await dataTransfer.dispose();
   }
@@ -133,7 +139,9 @@ test('an in-flight file open rejects another drop and blocks scene edits until c
     next = await episode(page, 'next.zip', true);
   await page.locator('.menubar').dispatchEvent('drop', { dataTransfer: slow });
   await expect(page.locator('.status-mode')).toHaveText('Loading');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeDisabled();
   await page.locator('.menubar').dispatchEvent('dragover', { dataTransfer: next });
   expect(await next.evaluate((data) => data.dropEffect)).toBe('none');
   await page.locator('.menubar').dispatchEvent('drop', { dataTransfer: next });

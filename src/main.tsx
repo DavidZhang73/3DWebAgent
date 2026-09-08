@@ -6,6 +6,8 @@ import loadMujoco from '@mujoco/mujoco';
 import wasmUrl from '@mujoco/mujoco/mujoco.wasm?url';
 import { World } from './runtime';
 import { Icon } from './Icon';
+import { IconButton, EditorTooltip } from './EditorControls';
+import type { PropertyCategory } from './workspace';
 import type { IconName } from './Icon';
 import { Menu } from './Menu';
 import { useFileDrop } from './useFileDrop';
@@ -78,13 +80,6 @@ function defaultLayout(api: DockviewApi, recording = false) {
     position: { referencePanel: 'objects', direction: 'below' },
     initialHeight: 470,
   });
-  for (const id of ['physics', 'display', 'tools'] as const)
-    api.addPanel({
-      id,
-      component: id,
-      title: titles[id],
-      position: { referencePanel: 'properties', direction: 'within' },
-    });
   api.addPanel({
     id: 'timeline',
     component: 'timeline',
@@ -102,6 +97,23 @@ function defaultLayout(api: DockviewApi, recording = false) {
   api.getPanel(recording ? 'timeline' : 'editHistory')?.api.setActive();
 }
 function App() {
+  const [propertyCategory, setPropertyCategory] = useState<PropertyCategory>(() => {
+    try {
+      const saved = localStorage.getItem('3dwebagent.property-category');
+      if (['object', 'physics', 'world', 'display', 'webmcp'].includes(saved ?? ''))
+        return saved as PropertyCategory;
+    } catch {
+      /* Storage may be unavailable in private browser contexts. */
+    }
+    return 'object';
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('3dwebagent.property-category', propertyCategory);
+    } catch {
+      /* Keep the current session usable without persistence. */
+    }
+  }, [propertyCategory]);
   const [hint, setHint] = useState(''),
     [details, setDetails] = useState(false);
   const [theme, setTheme] = useState<ThemeName>(savedTheme);
@@ -244,7 +256,9 @@ function App() {
   const onReady = ({ api: layout }: DockviewReadyEvent) => {
     api.current = layout;
     try {
-      const saved = localStorage.getItem('3dwebagent.layout.v3');
+      const saved =
+        localStorage.getItem('3dwebagent.layout.v4') ??
+        localStorage.getItem('3dwebagent.layout.v3');
       if (saved) {
         const json = JSON.parse(saved);
         if (json.popoutGroups?.length) throw new Error('Popouts disabled');
@@ -253,6 +267,22 @@ function App() {
       } else defaultLayout(layout, !!world?.recording);
     } catch {
       defaultLayout(layout, !!world?.recording);
+    }
+    // Consolidate legacy property panels in place, preserving the surrounding dock geometry.
+    const aliases = { physics: 'world', display: 'display', tools: 'webmcp' } as const;
+    const legacy = layout.panels.filter((panel) => panel.id in aliases);
+    const activeLegacy = layout.activePanel?.id;
+    if (legacy.length && !layout.getPanel('properties'))
+      layout.addPanel({
+        id: 'properties',
+        component: 'properties',
+        title: 'Properties',
+        position: { referencePanel: legacy[0].id, direction: 'within' },
+      });
+    for (const panel of legacy) layout.removePanel(panel);
+    if (activeLegacy && activeLegacy in aliases) {
+      setPropertyCategory(aliases[activeLegacy as keyof typeof aliases]);
+      layout.getPanel('properties')?.api.setActive();
     }
     if (!layout.getPanel('editHistory'))
       layout.addPanel({
@@ -269,13 +299,28 @@ function App() {
       if (title) panel.api.setTitle(title);
     }
     layout.getPanel(world?.recording ? 'timeline' : 'editHistory')?.api.setActive();
+    try {
+      localStorage.setItem('3dwebagent.layout.v4', JSON.stringify(layout.toJSON()));
+    } catch {
+      /* Layout persistence is optional. */
+    }
     layout.onDidLayoutChange(() => {
       try {
-        localStorage.setItem('3dwebagent.layout.v3', JSON.stringify(layout.toJSON()));
+        localStorage.setItem('3dwebagent.layout.v4', JSON.stringify(layout.toJSON()));
       } catch {}
     });
   };
-  const openPanel = (id: keyof typeof titles) => {
+  const openPanel = (requested: keyof typeof titles | 'objectPhysics') => {
+    const categories: Partial<Record<keyof typeof titles | 'objectPhysics', PropertyCategory>> = {
+      properties: 'object',
+      objectPhysics: 'physics',
+      physics: 'world',
+      display: 'display',
+      tools: 'webmcp',
+    };
+    const category = categories[requested];
+    const id = category ? 'properties' : (requested as keyof typeof titles);
+    if (category) setPropertyCategory(category);
     const panel = api.current?.getPanel(id);
     if (panel) panel.api.setActive();
     else api.current?.addPanel({ id, component: id, title: titles[id], renderer: 'always' });
@@ -297,16 +342,17 @@ function App() {
     active = false,
     disabled = false,
   ) => (
-    <button
-      className={'activity-button ' + (active ? 'active' : '')}
-      title={name}
-      aria-label={name}
-      aria-pressed={active}
+    <IconButton
+      icon={icon}
+      label={name}
+      large
+      className="activity-button"
+      active={active}
       disabled={disabled}
+      disabledReason="Wait for the active operation."
+      shortcut={icon === 'move' ? 'G' : icon === 'rotate' ? 'R' : icon === 'frame' ? 'Home' : ''}
       onClick={action}
-    >
-      <Icon name={icon} size={21} />
-    </button>
+    />
   );
   const command = (name: Command) =>
     void run(async () => {
@@ -378,7 +424,11 @@ function App() {
     });
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || document.querySelector('.app-menu[open],.context-menu')) return;
+      if (
+        event.defaultPrevented ||
+        document.querySelector('.app-menu[open],.context-menu,.editor-popover')
+      )
+        return;
       const target = event.target as Element,
         area = target.closest?.('[data-shortcuts]')?.getAttribute('data-shortcuts');
       const action = shortcut(event);
@@ -423,6 +473,7 @@ function App() {
               Open episode…
             </button>
             <button
+              aria-label="Import OBJ"
               disabled={!world?.canEditModel || loading}
               onClick={() => objInput.current?.click()}
             >
@@ -503,8 +554,11 @@ function App() {
               Frame All<kbd>Home</kbd>
             </button>
             <hr />
-            {Object.entries(titles).map(([id, title]) => (
-              <button key={id} onClick={() => openPanel(id as keyof typeof titles)}>
+            {Object.entries({ ...titles, objectPhysics: 'Object Physics' }).map(([id, title]) => (
+              <button
+                key={id}
+                onClick={() => openPanel(id as keyof typeof titles | 'objectPhysics')}
+              >
                 {title}
               </button>
             ))}
@@ -589,7 +643,9 @@ function App() {
         }}
       />
       {world ? (
-        <WorkspaceContext.Provider value={{ world, replace, run, command, version }}>
+        <WorkspaceContext.Provider
+          value={{ world, replace, run, command, version, propertyCategory, setPropertyCategory }}
+        >
           <div className="workbench">
             <aside className="activitybar" aria-label="Scene tools">
               {toolButton(
@@ -612,25 +668,6 @@ function App() {
               )}
               <span className="activity-divider" />
               {toolButton('Frame scene', 'frame', () => command('frameAll'), false, world.busy)}
-              {toolButton(
-                'Group selected objects',
-                'group',
-                () => command('group'),
-                false,
-                world.selected.length < 2 || world.busy || world.cursor !== null,
-              )}
-              <span className="activity-divider" />
-              {toolButton('Objects panel', 'cube', () => openPanel('objects'))}
-              {toolButton(
-                'Import OBJ',
-                'plus',
-                () => objInput.current?.click(),
-                false,
-                !world.canEditModel || loading,
-              )}
-              <span className="toolbar-spacer" />
-              {toolButton('WebMCP Diagnostics', 'terminal', () => openPanel('diagnostics'))}
-              {toolButton('Physics settings', 'settings', () => openPanel('physics'))}
             </aside>
             <div className="workspace">
               <DockviewReact
@@ -645,6 +682,7 @@ function App() {
       ) : (
         <div className="loading">Loading MuJoCo workspace…</div>
       )}
+      <EditorTooltip />
       <footer>
         <span className={'indicator ' + (diagnostics.api ? 'connected' : '')} />
         <span className="status-mode">

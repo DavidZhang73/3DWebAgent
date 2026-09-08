@@ -16,7 +16,10 @@ export type Command =
   | 'frame'
   | 'frameAll'
   | 'play';
+export type PropertyCategory = 'object' | 'physics' | 'world' | 'display' | 'webmcp';
 export type Workspace = {
+  propertyCategory: PropertyCategory;
+  setPropertyCategory: (category: PropertyCategory) => void;
   world: World;
   replace: (world: World) => void;
   run: (action: () => unknown | Promise<unknown>) => void;

@@ -554,3 +554,33 @@ test('per-object collision overrides round-trip without changing authored masks'
     paired.dispose();
   }
 });
+
+test('history rendering restores each selected frame once across free-view notifications', async () => {
+  const w = await create();
+  try {
+    await w.execute('translate_objects', { ids: ['a'], delta: [0, 1, 0] }, 'webmcp');
+    const restore = w.restore.bind(w);
+    let restores = 0;
+    w.restore = (data, frame) => {
+      if (data === w.history) restores++;
+      restore(data, frame);
+    };
+    w.setCursor(0);
+    w.viewedData();
+    w.setViewCamera({ position: [3, -4, 2], target: [0, 0, 0] });
+    for (let i = 0; i < 10; i++) w.viewedData();
+    assert.equal(restores, 1);
+    w.setCursor(1);
+    const moved = Array.from(w.viewedData().geom_xpos);
+    assert.equal(restores, 2);
+    w.setCursor(0);
+    assert.notDeepEqual(Array.from(w.viewedData().geom_xpos), moved);
+    assert.equal(restores, 3);
+    w.setTraceCursor(0);
+    w.viewedData();
+    w.viewedData();
+    assert.equal(restores, 4);
+  } finally {
+    w.dispose();
+  }
+});

@@ -5,6 +5,7 @@ const formatted = (value: number | undefined) =>
   value === undefined ? '' : String(Number(value.toFixed(6)));
 export function NumberField({
   label,
+  displayLabel,
   value,
   onChange,
   disabled = false,
@@ -12,6 +13,7 @@ export function NumberField({
   step = 'any',
 }: {
   label: string;
+  displayLabel?: string;
   value: number | undefined;
   onChange: (value: number) => void;
   disabled?: boolean;
@@ -33,7 +35,7 @@ export function NumberField({
   };
   return (
     <label className="field" data-hint={hint}>
-      <span>{label}</span>
+      <span>{displayLabel ?? label}</span>
       <input
         aria-label={label}
         type="number"
@@ -113,6 +115,7 @@ export function VectorFields({
       {values.map((value, i) => (
         <NumberField
           key={i}
+          displayLabel={(axes ?? (values.length === 4 ? ['W', 'X', 'Y', 'Z'] : ['X', 'Y', 'Z']))[i]}
           label={
             label +
             ' ' +

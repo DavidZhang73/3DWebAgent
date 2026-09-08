@@ -7,7 +7,9 @@ test('theme, menus and snapshot timeline preserve the loaded episode', async ({ 
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await page
     .getByLabel('Episode file', { exact: true })
     .setInputFiles(resolve('examples/two-objects.episode.zip'));
@@ -55,7 +57,9 @@ test('theme, menus and snapshot timeline preserve the loaded episode', async ({ 
 
 test('initial editor tools, import and timeline navigation remain editable', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await page
     .getByLabel('OBJ files', { exact: true })
     .setInputFiles(resolve('tests/fixtures/split-parts.obj'));
@@ -72,7 +76,9 @@ test('initial editor tools, import and timeline navigation remain editable', asy
   await page.getByText('View', { exact: true }).click();
   await page.getByRole('button', { name: 'Timeline', exact: true }).click();
   await page.getByRole('button', { name: 'Go to initial state', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await expect(page.getByRole('spinbutton', { name: 'Position X', exact: true })).toHaveValue(
     '0.75',
   );
@@ -94,7 +100,9 @@ test('initial editor tools, import and timeline navigation remain editable', asy
 
 test('orientation gizmo follows the camera and snaps to six directions', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Import OBJ', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Import OBJ', exact: true, includeHidden: true }),
+  ).toBeEnabled();
   await page.getByText('View', { exact: true }).click();
   await page.getByRole('button', { name: 'Display', exact: true }).click();
   const cameraValues = async (label: string) =>

@@ -123,7 +123,7 @@ summary {
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: clip;
 }
 .menubar {
   height: 34px;
@@ -251,16 +251,7 @@ summary {
   min-height: 0;
   min-width: 0;
 }
-.activitybar {
-  width: 45px;
-  padding: 7px 4px;
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: var(--ctp-mantle);
-  border-right: 1px solid var(--ctp-crust);
-}
+
 .activity-button {
   width: 36px;
   height: 36px;
@@ -334,16 +325,7 @@ summary {
   flex-direction: column;
   min-width: 0;
 }
-.viewport-toolbar {
-  height: 32px;
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 0 10px;
-  background: var(--ctp-base);
-  border-bottom: 1px solid var(--ctp-mantle);
-}
+
 .viewport-stage {
   position: relative;
   flex: 1;
@@ -1313,42 +1295,16 @@ footer {
   height: 100%;
   min-height: 0;
 }
-.episode-timeline .timeline-toolbar {
-  flex-wrap: wrap;
-  height: auto;
-  min-height: 36px;
-  gap: 6px;
-  padding: 6px 10px;
-}
+
 .episode-columns {
-  display: grid;
-  grid-template-columns: minmax(200px, 34%) 1fr;
+  display: flex;
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
-.episode-calls,
 .episode-detail {
   overflow: auto;
   padding: 10px;
-}
-.episode-calls {
-  border-right: 1px solid var(--ctp-surface1);
-}
-.episode-calls button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  text-align: left;
-  padding: 8px;
-  margin-bottom: 4px;
-}
-.episode-calls button[aria-current='step'] {
-  background: var(--ctp-surface1);
-}
-.episode-calls small {
-  opacity: 0.7;
 }
 .episode-detail pre {
   white-space: pre-wrap;
@@ -1362,6 +1318,453 @@ footer {
   max-height: 240px;
   object-fit: contain;
 }
-.episode-detail input[type='range'] {
+
+/* The episode timeline uses call order; physical time is local to the selected call. */
+.timeline-tracks {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.episode-detail {
+  flex: 0 0 min(300px, 35%);
+  min-width: 0;
+  border-left: 1px solid var(--ctp-surface1);
+}
+.episode-detail strong {
+  display: block;
+  padding-right: 24px;
+  overflow-wrap: anywhere;
+}
+.close-call-detail {
+  float: right;
+}
+.timeline-track-tools,
+.physics-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 12px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.timeline-track-tools > span {
+  flex: 1;
+  color: var(--ctp-subtext0);
+}
+.timeline-tracks .timeline-scroll {
+  flex: none;
+  min-height: 68px;
+}
+.call-timeline-canvas {
+  position: relative;
+  height: 60px;
+  touch-action: none;
+  user-select: none;
+  cursor: col-resize;
+}
+.call-markers {
+  position: relative;
+  height: 36px;
+  border-bottom: 1px solid var(--ctp-surface0);
+}
+.call-key {
+  position: absolute;
+  top: 3px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1px 0;
+  border: 0;
+  background: transparent;
+  color: var(--ctp-teal);
+  line-height: 14px;
+  min-width: 0;
+}
+.call-key small {
+  font-size: 9px;
+  color: var(--ctp-subtext0);
+}
+.call-key.failed {
+  color: var(--ctp-red);
+}
+.call-key[aria-current='step'] {
+  background: var(--ctp-surface1);
+  outline: 1px solid var(--ctp-blue);
+}
+.call-key:hover {
+  background: var(--ctp-surface0);
+}
+.physics-subtrack {
+  border-top: 1px solid var(--ctp-surface1);
+  padding-bottom: 4px;
+  min-height: 48px;
+}
+.physics-heading input {
+  width: 76px;
+}
+.physics-heading > span {
+  color: var(--ctp-subtext0);
+  font:
+    10px ui-monospace,
+    monospace;
+}
+.physics-axis-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 0 32px 0 20px;
+}
+.physics-axis {
+  flex: 1;
+  position: relative;
+  height: 28px;
+  margin: 4px 0;
+  min-width: 50px;
+  background: color-mix(in srgb, var(--ctp-teal) 12%, var(--ctp-mantle));
+  border-bottom: 2px solid var(--ctp-teal);
+  touch-action: none;
+  cursor: col-resize;
+}
+.physics-tick {
+  position: absolute;
+  bottom: 2px;
+  transform: translateX(-50%);
+  border-left: 1px solid var(--ctp-overlay0);
+  padding: 5px 3px;
+  white-space: nowrap;
+  color: var(--ctp-subtext0);
+  font:
+    9px ui-monospace,
+    monospace;
+  pointer-events: none;
+}
+.physics-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ctp-blue);
+  pointer-events: none;
+}
+.physics-playhead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  border: 5px solid transparent;
+  border-top-color: var(--ctp-blue);
+}
+.rollback-marker {
+  color: var(--ctp-red);
+}
+.rollback-marker[aria-pressed='true'] {
+  outline: 1px solid var(--ctp-red);
+}
+.timeline-no-physics {
+  display: block;
+  padding: 12px;
+  font-size: 11px;
+  color: var(--ctp-subtext0);
+}
+.failed-attempt-toggle {
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.timeline-verification {
+  flex: none;
+  max-height: 130px;
+  overflow: auto;
+  border-top: 1px solid var(--ctp-surface1);
+  padding: 6px 12px;
+  font-size: 11px;
+}
+.timeline-verification pre {
+  white-space: pre-wrap;
+}
+
+.timeline-track-tools button,
+.physics-heading button,
+.physics-heading input {
+  padding: 2px 7px;
+  line-height: 16px;
+}
+.call-timeline-canvas .timeline-ruler {
+  height: 24px;
+}
+.call-key {
+  gap: 2px;
+}
+
+/* Compact editor controls shared by the viewport, properties and timeline. */
+.editor-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ctp-subtext1);
+  cursor: pointer;
+}
+.editor-icon-button:hover:not([aria-disabled='true']) {
+  background: var(--ctp-surface0);
+  color: var(--ctp-text);
+}
+.editor-icon-button.active {
+  background: var(--selection);
+  color: var(--ctp-blue);
+}
+.editor-icon-button[aria-disabled='true'] {
+  opacity: 0.38;
+  cursor: default;
+}
+.editor-icon-button.large {
+  width: 32px;
+  height: 32px;
+}
+.control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex: none;
+}
+.control-group + .control-group {
+  border-left: 1px solid var(--ctp-surface1);
+  padding-left: 5px;
+  margin-left: 3px;
+}
+.editor-tooltip,
+.editor-popover {
+  position: fixed;
+  z-index: 10000;
+  max-width: min(300px, calc(100vw - 16px));
+  border: 1px solid var(--ctp-surface1);
+  border-radius: 4px;
+  background: var(--ctp-mantle);
+  box-shadow: 0 5px 20px #0005;
+  color: var(--ctp-text);
+}
+.editor-tooltip {
+  pointer-events: none;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.editor-tooltip > span {
+  color: var(--ctp-subtext0);
+}
+.editor-tooltip kbd {
+  align-self: flex-start;
+  background: var(--ctp-surface0);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+.editor-tooltip .tooltip-reason {
+  border-top: 1px solid var(--ctp-surface1);
+  padding-top: 5px;
+  color: var(--ctp-peach);
+}
+.editor-popover {
+  min-width: 190px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+}
+.editor-popover .check {
+  margin: 0;
+}
+.activitybar {
+  width: 40px;
+  padding: 4px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--ctp-mantle);
+  border-right: 1px solid var(--ctp-crust);
+}
+.viewport-toolbar {
+  height: 30px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--ctp-base);
+  border-bottom: 1px solid var(--ctp-mantle);
+  min-height: 30px;
+}
+.properties-editor {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+.property-tabs {
+  width: 34px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 3px;
+  background: var(--ctp-mantle);
+  border-right: 1px solid var(--ctp-surface0);
+}
+.property-content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+.property-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 10px;
+  background: var(--ctp-base);
+  border-bottom: 1px solid var(--ctp-surface0);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+}
+.property-heading span {
+  font-size: 10px;
+  color: var(--ctp-subtext0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.property-content .panel {
+  padding: 8px 10px;
+  overflow: visible;
+}
+.property-content .field {
+  display: grid;
+  grid-template-columns: minmax(72px, 42%) minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  margin: 4px 0;
+  font-size: 11px;
+}
+.property-content .field > span {
+  max-width: none;
+  min-width: 0;
+}
+.property-content .field > input,
+.property-content .field > select {
+  min-width: 0;
   width: 100%;
+  padding: 3px 5px;
+}
+.property-content .vector {
+  margin: 8px 0;
+}
+.property-content .vector h4 {
+  margin: 5px 0;
+  font-size: 10px;
+}
+.property-content .vector .field > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.property-content .property-section {
+  margin: 0;
+  border-color: var(--ctp-surface0);
+}
+.property-content .property-section > summary {
+  padding: 7px 0;
+  font-size: 11px;
+}
+.property-content .property-section > div {
+  padding: 2px 0 7px;
+}
+.property-content .empty {
+  padding: 14px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.episode-timeline .timeline-toolbar {
+  flex-wrap: nowrap;
+  height: 34px;
+  min-height: 34px;
+  gap: 6px;
+  padding: 3px 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: none;
+}
+.timeline-toolbar > * {
+  flex-shrink: 0;
+}
+.timeline-toolbar input,
+.timeline-toolbar select {
+  font-size: 11px;
+  padding: 3px 5px;
+  height: 24px;
+}
+.timeline-toolbar label {
+  font-size: 10px;
+}
+.timeline-toolbar input[type='number'] {
+  width: 54px;
+}
+.episode-status {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 5px;
+  border-radius: 3px;
+  background: var(--ctp-surface0);
+  color: var(--ctp-subtext0);
+}
+.episode-status.active {
+  color: var(--ctp-teal);
+}
+.verification-state {
+  color: var(--ctp-yellow);
+  font-size: 10px;
+}
+.timeline-track-tools {
+  gap: 3px;
+  padding: 1px 8px;
+}
+.timeline-track-tools .editor-icon-button,
+.physics-heading .editor-icon-button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+}
+.rollback-marker.editor-icon-button {
+  width: auto;
+  padding: 0 5px;
+  color: var(--ctp-red);
+}
+.dv-tab {
+  font-size: 11px;
+}
+.episode-detail .close-call-detail {
+  width: 26px;
+  height: 26px;
+}
+
+.property-content .tool {
+  padding: 4px 0;
 }

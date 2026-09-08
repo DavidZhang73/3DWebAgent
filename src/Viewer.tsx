@@ -38,6 +38,7 @@ export function Viewer({ world }: { world: World }) {
     controls.enableDamping = false;
     let syncing = false,
       revision = -1;
+    let syncedView: CameraState | undefined, syncedMode: string | undefined;
     const setCamera = (c: THREE.PerspectiveCamera, state: CameraState) => {
       c.position.fromArray(state.position);
       c.lookAt(new THREE.Vector3().fromArray(state.target));
@@ -48,6 +49,8 @@ export function Viewer({ world }: { world: World }) {
       setCamera(camera, state);
       controls.target.fromArray(state.target);
       controls.update();
+      syncedView = state;
+      syncedMode = world.view.mode;
     };
     restoreView();
     scene.add(new THREE.HemisphereLight(0xc6d3e8, 0x525057, 2));
@@ -371,11 +374,14 @@ export function Viewer({ world }: { world: World }) {
     document.addEventListener('visibilitychange', onVisibility);
     const onNavigationStart = () => {
       if (syncing || preview || world.busy) return;
-      if (world.view.mode === 'camera')
+      if (world.view.mode === 'camera') {
         world.setViewCamera({
           position: camera.position.toArray() as Vec3,
           target: controls.target.toArray() as Vec3,
         });
+        syncedView = world.view.camera;
+        syncedMode = world.view.mode;
+      }
     };
     const saveView = () => {
       if (syncing || preview || world.busy) return;
@@ -448,7 +454,13 @@ export function Viewer({ world }: { world: World }) {
     const render = (live = false) => {
       if (revision !== world.revision) {
         syncing = true;
-        if (!preview) restoreView();
+        if (
+          !preview &&
+          (world.view.mode === 'camera' ||
+            syncedMode !== world.view.mode ||
+            syncedView !== world.view.camera)
+        )
+          restoreView();
         syncing = false;
         revision = world.revision;
       }
